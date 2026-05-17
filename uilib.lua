@@ -4,7 +4,16 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
-local Library do 
+-- Undetected File System APIs (clones C closures to bypass game hooks)
+local writefile = clonefunction and clonefunction(writefile) or writefile
+local readfile = clonefunction and clonefunction(readfile) or readfile
+local isfile = clonefunction and clonefunction(isfile) or isfile
+local isfolder = clonefunction and clonefunction(isfolder) or isfolder
+local makefolder = clonefunction and clonefunction(makefolder) or makefolder
+local listfiles = clonefunction and clonefunction(listfiles) or listfiles
+local delfile = clonefunction and clonefunction(delfile) or delfile
+
+local Library do
 	Library = {
         Theme =  { },
         espfont = nil,
@@ -22,10 +31,10 @@ local Library do
         FadeSpeed = 0.2,
 
         Folders = {
-            Directory = "Vision",
-            Configs = "Vision/Configs",
-            Assets = "Vision/Assets",
-			Sounds = "Vision/Sounds",
+            Directory = "settings_data",
+            Configs = "settings_data/configs",
+            Assets = "settings_data/assets",
+			Sounds = "settings_data/sounds",
         },
 
         -- Ignore below
@@ -842,7 +851,11 @@ Library.GetConfig = function(self)
     local Config = { } 
 
     local Success, Result = Library:SafeCall(function()
+        local configBlacklist = {["ConfigDropdown"] = true, ["ConfigNameInput"] = true}
         for Index, Value in Library.Flags do 
+            if configBlacklist[Index] then
+                continue
+            end
             if type(Value) == "table" and Value.Key then
                 Config[Index] = {Key = tostring(Value.Key), Mode = Value.Mode, Toggled = Value.Toggled}
             elseif type(Value) == "table" and Value.Color then
@@ -2692,9 +2705,9 @@ do
                 local u = esc(Username)
                 local r = esc(Role)
                 if r:lower():find("detected") then
-                    Line.Text = string.format('<b><font color="#FF4D4D">%s</font></b>  <font color="#FF4D4D">[%s]</font>', u, r)
+                    Line.Instance.Text = string.format('<b><font color="#FF4D4D">%s</font></b>  <font color="#FF4D4D">[%s]</font>', u, r)
                 else
-                    Line.Text = string.format('%s  <font color="#B9B9B9">%s</font>', u, r)
+                    Line.Instance.Text = string.format('%s  <font color="#B9B9B9">%s</font>', u, r)
                 end
             end
 
@@ -4425,6 +4438,10 @@ do
             end
         end
 
+        function Slider:SetVisibility(Bool)
+            Items["Slider"].Instance.Visible = Bool
+        end
+
         Items["RealSlider"]:Connect("InputBegan", function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                 Slider.Sliding = true
@@ -4649,6 +4666,10 @@ do
             Items["RealDropdown"]:OnHoverLeave(function()
                 Items["RealDropdown"]:Tween(nil, {BackgroundColor3 = Library.Theme.Element})
             end)
+        end
+
+        function Dropdown:SetVisibility(Bool)
+            Items["Dropdown"].Instance.Visible = Bool
         end
 
         function Dropdown:Get()
@@ -5363,7 +5384,134 @@ do
             })
         end
         
-        -- Configs section removed to prevent detection/ban
+        -- Configs Section
+        local ConfigsSection = SettingsPage:Section({Name = "Configs", Side = 2}) do
+            local ConfigDropdown = ConfigsSection:Dropdown({
+                Name = "Config",
+                Flag = "ConfigDropdown",
+                Items = {},
+                MaxSize = 150,
+            })
+
+            local ConfigNameInput = ConfigsSection:Textbox({
+                Name = "Config Name",
+                Flag = "ConfigNameInput",
+                Placeholder = "Enter config name...",
+                Finished = true,
+                Default = "",
+            })
+
+            local function GetNextAutoName()
+                local existing = {}
+                if listfiles and isfolder and isfolder(Library.Folders.Configs) then
+                    local ok, files = pcall(listfiles, Library.Folders.Configs)
+                    if ok then
+                        for _, f in files do
+                            local name = f:match("([^/^\\]+)%.json$")
+                            if name then
+                                existing[name] = true
+                            end
+                        end
+                    end
+                end
+                for i = 1, 9999 do
+                    local candidate = "Config" .. tostring(i)
+                    if not existing[candidate] then
+                        return candidate
+                    end
+                end
+                return "Config"
+            end
+
+            local function RefreshConfigs()
+                Library:RefreshConfigsList(ConfigDropdown)
+            end
+
+            ConfigsSection:Button({
+                Name = "Save Config",
+                Callback = function()
+                    local inputName = Library.Flags["ConfigNameInput"] or ""
+                    local selectedName = Library.Flags["ConfigDropdown"]
+
+                    local saveName
+                    if inputName and inputName ~= "" then
+                        saveName = inputName
+                    elseif selectedName and selectedName ~= "" then
+                        saveName = selectedName
+                    else
+                        saveName = GetNextAutoName()
+                    end
+
+                    local configData = Library:GetConfig()
+                    local filePath = Library.Folders.Configs .. "/" .. saveName .. ".json"
+
+                    task.spawn(function()
+                        local ok, err = pcall(function()
+                            writefile(filePath, configData)
+                        end)
+
+                        if ok then
+                            Library:Notification("Saved config: " .. saveName, 3)
+                        else
+                            Library:Notification("Failed to save config.", 3)
+                        end
+
+                        RefreshConfigs()
+                    end)
+                end
+            })
+
+            ConfigsSection:Button({
+                Name = "Load Config",
+                Callback = function()
+                    local selectedName = Library.Flags["ConfigDropdown"]
+                    if not selectedName or selectedName == "" then
+                        Library:Notification("Select a config to load.", 3)
+                        return
+                    end
+
+                    local filePath = Library.Folders.Configs .. "/" .. selectedName .. ".json"
+                    
+                    task.spawn(function()
+                        local ok, data = pcall(function()
+                            return readfile(filePath)
+                        end)
+
+                        if ok and data then
+                            local loadOk, loadErr = Library:LoadConfig(data)
+                            if loadOk then
+                                Library:Notification("Loaded config: " .. selectedName, 3)
+                            else
+                                Library:Notification("Failed to parse config.", 3)
+                            end
+                        else
+                            Library:Notification("Config file not found.", 3)
+                        end
+                    end)
+                end
+            })
+
+            ConfigsSection:Button({
+                Name = "Delete Config",
+                Callback = function()
+                    local selectedName = Library.Flags["ConfigDropdown"]
+                    if not selectedName or selectedName == "" then
+                        Library:Notification("Select a config to delete.", 3)
+                        return
+                    end
+
+                    local fileName = selectedName .. ".json"
+                    task.spawn(function()
+                        Library:DeleteConfig(fileName)
+                        Library:Notification("Deleted config: " .. selectedName, 3)
+                        RefreshConfigs()
+                    end)
+                end
+            })
+
+            -- Initial population of configs dropdown
+            RefreshConfigs()
+        end
     end
 end
 
