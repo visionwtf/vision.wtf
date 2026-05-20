@@ -432,7 +432,7 @@ local Library do
                 NewX = MathClamp(NewX, 0, ScreenSize.X - GuiSize.X)
                 NewY = MathClamp(NewY, 0, ScreenSize.Y - GuiSize.Y)
         
-                self:Tween(TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, NewX, 0, NewY)})
+                self:Tween(TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(StartPosition.X.Scale, NewX, StartPosition.Y.Scale, NewY)})
             end
         
             local InputChanged
@@ -2098,6 +2098,229 @@ local Library do
             return KeybindList
         end
 
+        Library.ModeratorList = function(self, Title)
+            local ModeratorList = { }
+            Library.ModList = ModeratorList
+            ModeratorList.Moderators = {}
+
+            local Items = { } do 
+                Items["ModeratorList"] = Instances:Create("Frame", {
+                    Parent = Library.Holder.Instance,
+                    Name = "\0",
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    AnchorPoint = Vector2New(0, 0.5),
+                    BackgroundTransparency = 0.30000001192092896,
+                    Position = UDim2New(0, 20, 0.5, 200),
+                    Size = UDim2New(0, 100, 0, 30),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundColor3 = FromRGB(27, 25, 29),
+                    Visible = true
+                })  Items["ModeratorList"]:AddToTheme({BackgroundColor3 = "Section Background"})
+
+                Items["ModeratorList"]:MakeDraggable()
+                
+                Instances:Create("UICorner", {
+                    Parent = Items["ModeratorList"].Instance,
+                    Name = "\0"
+                })
+                
+                Items["Top"] = Instances:Create("Frame", {
+                    Parent = Items["ModeratorList"].Instance,
+                    Name = "\0",
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(1, 12, 0, 40),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(31, 31, 36)
+                })  Items["Top"]:AddToTheme({BackgroundColor3 = "Section Background 2"})
+                
+                Items["Icon"] = Instances:Create("ImageLabel", {
+                    Parent = Items["Top"].Instance,
+                    Name = "\0",
+                    ImageColor3 = FromRGB(255, 255, 255),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(0, 21, 0, 20),
+                    AnchorPoint = Vector2New(0, 0.5),
+                    Image = "rbxassetid://73789337996373",
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 15, 0.5, 0),
+                    ZIndex = 2,
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })
+                
+                Instances:Create("UIGradient", {
+                    Parent = Items["Icon"].Instance,
+                    Name = "\0",
+                    Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(131, 131, 131)), RGBSequenceKeypoint(1, FromRGB(255, 255, 255))}
+                }):AddToTheme({Color = function()
+                    return RGBSequence{RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.AccentGradient)}
+                end})
+                
+                Items["Title"] = Instances:Create("TextLabel", {
+                    Parent = Items["Top"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(248, 248, 248),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = Title,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    AnchorPoint = Vector2New(0, 0.5),
+                    Size = UDim2New(0, 0, 0, 15),
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 45, 0.5, -1),
+                    BorderSizePixel = 0,
+                    ZIndex = 2,
+                    TextSize = 15,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })  Items["Title"]:AddToTheme({TextColor3 = "Text"})
+                
+                Instances:Create("UICorner", {
+                    Parent = Items["Top"].Instance,
+                    Name = "\0"
+                })
+                
+                Instances:Create("Frame", {
+                    Parent = Items["Top"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2New(0, 1),
+                    Position = UDim2New(0, 0, 1, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(0, 10, 0, 5),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(31, 31, 36)
+                }):AddToTheme({BackgroundColor3 = "Section Background 2"})
+                
+                Instances:Create("Frame", {
+                    Parent = Items["Top"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2New(1, 1),
+                    Position = UDim2New(1, 0, 1, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(0, 10, 0, 5),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(31, 31, 36)
+                }):AddToTheme({BackgroundColor3 = "Section Background 2"})
+                
+                Items["Content"] = Instances:Create("Frame", {
+                    Parent = Items["ModeratorList"].Instance,
+                    Name = "\0",
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 0, 0, 40),
+                    Size = UDim2New(1, 12, 0, 0),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Items["Content"].Instance,
+                    Name = "\0",
+                    Padding = UDimNew(0, 4),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+                
+                Instances:Create("UIPadding", {
+                    Parent = Items["Content"].Instance,
+                    Name = "\0",
+                    PaddingTop = UDimNew(0, 8),
+                    PaddingBottom = UDimNew(0, 8),
+                    PaddingRight = UDimNew(0, 8),
+                    PaddingLeft = UDimNew(0, 8)
+                })
+                
+                Instances:Create("UIPadding", {
+                    Parent = Items["ModeratorList"].Instance,
+                    Name = "\0",
+                    PaddingRight = UDimNew(0, 12)
+                })                
+            end
+
+            function ModeratorList:SetVisibility(Bool)
+                Items["ModeratorList"].Instance.Visible = Bool
+            end
+
+            function ModeratorList:Add(Name, Reason)
+                if ModeratorList.Moderators[Name] then
+                    return ModeratorList.Moderators[Name]
+                end
+
+                local NewMod = Instances:Create("TextButton", {
+                    Parent = Items["Content"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(0, 0, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = "",
+                    AutoButtonColor = false,
+                    BackgroundTransparency = 1,
+                    Size = UDim2New(1, 0, 0, 20),
+                    BorderSizePixel = 0,
+                    TextSize = 14,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })
+                
+                local NewModAccent = Instances:Create("Frame", {
+                    Parent = NewMod.Instance,
+                    Name = "\0",
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    AnchorPoint = Vector2New(0, 0.5),
+                    BackgroundTransparency = 0,
+                    Position = UDim2New(0, 0, 0.5, 0),
+                    Size = UDim2New(0, 6, 0, 6),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(255, 100, 100)
+                })
+
+                Instances:Create("UIGradient",{
+                    Parent = NewModAccent.Instance,
+                    Name = "\0",
+                    Rotation = -115,
+                    Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 100, 100)), RGBSequenceKeypoint(1, FromRGB(200, 50, 50))}
+                })
+                
+                Instances:Create("UICorner", {
+                    Parent = NewModAccent.Instance,
+                    Name = "\0"
+                })
+                
+                local NewModText = Instances:Create("TextLabel", {
+                    Parent = NewMod.Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(255, 255, 255),
+                    TextTransparency = 0,
+                    Text = Name .. " - " .. Reason,
+                    Size = UDim2New(0, 0, 0, 15),
+                    AnchorPoint = Vector2New(0, 0.5),
+                    BorderSizePixel = 0,
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 15, 0.5, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    TextSize = 14,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })  NewModText:AddToTheme({TextColor3 = "Text"})
+
+                function NewMod:Remove()
+                    NewMod.Instance:Destroy()
+                    ModeratorList.Moderators[Name] = nil
+                end
+
+                ModeratorList.Moderators[Name] = NewMod
+                return NewMod
+            end
+
+            function ModeratorList:Remove(Name)
+                if ModeratorList.Moderators[Name] then
+                    ModeratorList.Moderators[Name]:Remove()
+                end
+            end
+
+            return ModeratorList
+        end
+
         Library.Notification = function(self, Data)
             local Items = { } do 
                 Items["Notification"] = Instances:Create("Frame", {
@@ -2831,7 +3054,7 @@ local Library do
                     AnchorPoint = Vector2New(1, 0),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 0.20000000298023224,
-                    Position = UDim2New(1, -56, 0, 11),
+                    Position = UDim2New(1, -92, 0, 11),
                     Size = UDim2New(0, 32, 0, 32),
                     ZIndex = 2,
                     TextSize = 14,
@@ -3192,7 +3415,7 @@ local Library do
 
                 Settings:Slider({
                     Name = "Background Transparency",
-                    Default = 0.12,
+                    Default = 0.2,
                     Decimals = 0.01,
                     Max = 1,
                     Min = 0,
@@ -6412,7 +6635,7 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(1, 0),
                     Position = UDim2New(1, 0, 0, 0),
-                    Size = UDim2New(0, 200, 0, 25),
+                    Size = UDim2New(0, 150, 0, 22),
                     ZIndex = 2,
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(27, 26, 29)
@@ -6464,7 +6687,7 @@ local Library do
                     Position = UDim2New(0, 0, 0, -1),
                     BorderSizePixel = 0,
                     ZIndex = 2,
-                    TextSize = 14,
+                    TextSize = 12,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  Items["Toggle"]:AddToTheme({TextColor3 = function()
                     return Library.Theme.Text
@@ -6485,7 +6708,7 @@ local Library do
                     Position = UDim2New(0.35, 0, 0, -1),
                     BorderSizePixel = 0,
                     ZIndex = 2,
-                    TextSize = 14,
+                    TextSize = 12,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  Items["Hold"]:AddToTheme({TextColor3 = function()
                     return Library.Theme.Text
@@ -6501,12 +6724,12 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     AutoButtonColor = false,
                     AnchorPoint = Vector2New(0, 0),
-                    Size = UDim2New(0.4, 0, 1, 0),
+                    Size = UDim2New(0.3, 0, 1, 0),
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0.7, -12, 0, -1),
+                    Position = UDim2New(0.7, 0, 0, -1),
                     BorderSizePixel = 0,
                     ZIndex = 2,
-                    TextSize = 14,
+                    TextSize = 12,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  Items["Always"]:AddToTheme({TextColor3 = function()
                     return Library.Theme.Text
@@ -7367,7 +7590,7 @@ local Library do
     Library.CreateSettingsPage = function(self, Window, KeybindList)
         local Page = Window:Page({Name = "Settings", Icon = "122669828593160"})
 
-        local ConfigsSection = Page:Section({Name = "Configs", Side = 2}) do 
+        local ConfigsSection = Page:Section({Name = "Configs", Side = 1}) do 
             local ConfigName
             local ConfigSelected
 
