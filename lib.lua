@@ -3043,87 +3043,7 @@ local Library do
                     return RGBSequence{RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.AccentGradient)}
                 end})
 
-                Items["SettingsButton"] = Instances:Create("TextButton", {
-                    Parent = Items["MainFrame"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = FromRGB(0, 0, 0),
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Text = "",
-                    AutoButtonColor = false,
-                    AnchorPoint = Vector2New(1, 0),
-                    BorderSizePixel = 0,
-                    BackgroundTransparency = 0.20000000298023224,
-                    Position = UDim2New(1, -92, 0, 11),
-                    Size = UDim2New(0, 32, 0, 32),
-                    ZIndex = 2,
-                    TextSize = 14,
-                    BackgroundColor3 = FromRGB(27, 25, 29)
-                })  Items["SettingsButton"]:AddToTheme({BackgroundColor3 = "Element"})
-                
-                Instances:Create("UICorner", {
-                    Parent = Items["SettingsButton"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 7)
-                })
-                
-                Items["SettingsIcon"] = Instances:Create("ImageLabel", {
-                    Parent = Items["SettingsButton"].Instance,
-                    Name = "\0",
-                    ImageColor3 = FromRGB(240, 240, 240),
-                    ImageTransparency = 0.30000001192092896,
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(0, 15, 0, 14),
-                    AnchorPoint = Vector2New(0.5, 0.5),
-                    Image = "rbxassetid://122669828593160",
-                    BackgroundTransparency = 1,
-                    Position = UDim2New(0.5, 0, 0.5, 0),
-                    ZIndex = 3,
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                })  Items["SettingsIcon"]:AddToTheme({ImageColor3 = "Text"})
-
-                Items["SettingsIconAccent"] = Instances:Create("Frame", {
-                    Parent = Items["SettingsButton"].Instance,
-                    Name = "\0",
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    AnchorPoint = Vector2New(0.5, 0.5),
-                    BorderSizePixel = 0,
-                    Position = UDim2New(0.5, 0, 0.5, 0),
-                    Size = UDim2New(0, 0, 0, 0),
-                    ZIndex = 2,
-                    BackgroundTransparency = 1,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                })
-
-                Instances:Create("UICorner", {
-                    Parent = Items["SettingsIconAccent"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 7)
-                })
-
-                Instances:Create("UIGradient", {
-                    Parent = Items["SettingsIconAccent"].Instance,
-                    Name = "\0",
-                    Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(143, 143, 143))},
-                    Rotation = -115
-                }):AddToTheme({Color = function()
-                    return RGBSequence{RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.AccentGradient)}
-                end})
-
-                Items["SettingsButton"]:OnHover(function()
-                    Items["SettingsIconAccent"]:Tween(TweenInfo.new(Library.Tween.Time + 0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                        Size = UDim2New(1, 0, 1, 0),
-                        BackgroundTransparency = 0
-                    })
-                end)
-
-                Items["SettingsButton"]:OnHoverLeave(function()
-                    Items["SettingsIconAccent"]:Tween(TweenInfo.new(Library.Tween.Time + 0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                        Size = UDim2New(0, 0, 0, 0),
-                        BackgroundTransparency = 1
-                    })
-                end)
+                -- Settings button removed - no longer needed
 
                 Items["CloseButton"]:OnHover(function()
                     Items["CloseIconAccent"]:Tween(TweenInfo.new(Library.Tween.Time + 0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
@@ -3305,10 +3225,7 @@ local Library do
                             SettingsItems["Settings"].Instance.Visible = true
                             SettingsItems["Settings"].Instance.Parent = Library.Holder.Instance
                             
-                            RenderStepped = RunService.RenderStepped:Connect(function()
-                                SettingsItems["Settings"].Instance.Position = UDim2New(0, Items["SettingsIcon"].Instance.AbsolutePosition.X, 0, Items["SettingsIcon"].Instance.AbsolutePosition.Y + Items["SettingsButton"].Instance.AbsoluteSize.Y + 108)
-                                SettingsItems["Settings"].Instance.Size = UDim2New(0, 325, 0, 230)
-                            end)
+                            -- Settings button removed, no positioning needed
         
                             for Index, Value in Library.OpenFrames do 
                                 if Value ~= Settings then 
@@ -3370,11 +3287,7 @@ local Library do
                         Settings:SetOpen(false)
                     end)
     
-                    Items["SettingsButton"]:Connect("InputBegan", function(Input)
-                        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then 
-                            Settings:SetOpen(not Settings.IsOpen)
-                        end
-                    end)
+                    -- SettingsButton removed - no longer needed
     
                     Settings.Items = SettingsItems
                     setmetatable(Settings, Library.Sections)
@@ -3429,7 +3342,7 @@ local Library do
                 Settings:Keybind({
                     Name = "Menu Keybind",
                     Flag = "MenuBind",
-                    Default = Enum.KeyCode.Z,
+                    Default = Enum.KeyCode.RightShift,
                     Callback = function(Value)
                         Window:SetOpen(Value)
                     end
@@ -5776,8 +5689,10 @@ local Library do
                 end
             end)
 
-            if Slider.Default then
+            if Slider.Default ~= nil then
                 Slider:Set(Slider.Default)
+            else
+                Slider:Set(Slider.Min)
             end
 
             Library.SetFlags[Slider.Flag] = function(Value)
@@ -7588,7 +7503,7 @@ local Library do
     end
 
     Library.CreateSettingsPage = function(self, Window, KeybindList)
-        local Page = Window:Page({Name = "Settings", Icon = "122669828593160"})
+        local Page = Window:Page({Name = "Settings", Icon = "14895352873"})
 
         local ConfigsSection = Page:Section({Name = "Configs", Side = 1}) do 
             local ConfigName
