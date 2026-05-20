@@ -1892,7 +1892,8 @@ local Library do
                     Size = UDim2New(0, 100, 0, 30),
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.XY,
-                    BackgroundColor3 = FromRGB(27, 25, 29)
+                    BackgroundColor3 = FromRGB(27, 25, 29),
+                    Active = true
                 })  Items["KeybindsList"]:AddToTheme({BackgroundColor3 = "Section Background"})
 
                 Items["KeybindsList"]:MakeDraggable()
@@ -3342,9 +3343,11 @@ local Library do
                 Settings:Keybind({
                     Name = "Menu Keybind",
                     Flag = "MenuBind",
-                    Default = Enum.KeyCode.RightShift,
-                    Callback = function(Value)
-                        Window:SetOpen(Value)
+                    Default = nil,
+                    Callback = function(Toggled)
+                        if Toggled then
+                            Window:SetOpen(not Window.IsOpen)
+                        end
                     end
                 })
 
@@ -4724,19 +4727,18 @@ local Library do
                 Section.IsActive = not Section.IsActive
 
                 if not Section.IsActive then 
-                    Items["Fade"].Instance.Visible = true
-                    Items["Fade"]:Tween(nil, {BackgroundTransparency = 0.3})
-    
+                    -- Hide content when section is collapsed
+                    Items["Content"].Instance.Visible = false
+                    Items["Background"].Instance.Visible = false
+                    
                     Items["Gradient"].Instance.Enabled = false
                     Items["Toggle"]:ChangeItemTheme({BackgroundColor3 = "Element"})
                     Items["Toggle"]:Tween(nil, {BackgroundColor3 = Library.Theme.Element})
                     Items["Circle"]:Tween(nil, {AnchorPoint = Vector2New(0, 0.5), Position = UDim2New(0, 4, 0.5, 0), BackgroundColor3 = Library.Theme.Text, BackgroundTransparency = 0.6})
                 else
-                    Items["Fade"]:Tween(nil, {BackgroundTransparency = 1})
-                    task.spawn(function() 
-                        task.wait(Library.Tween.Time)
-                        Items["Fade"].Instance.Visible = false
-                    end)
+                    -- Show content when section is expanded
+                    Items["Content"].Instance.Visible = true
+                    Items["Background"].Instance.Visible = true
 
                     Items["Gradient"].Instance.Enabled = true
                     Items["Toggle"]:ChangeItemTheme({BackgroundColor3 = "Text"})
@@ -4959,7 +4961,7 @@ local Library do
                         BorderColor3 = FromRGB(0, 0, 0),
                         Size = UDim2New(0, 14, 0, 14),
                         AnchorPoint = Vector2New(0, 0.5),
-                        Image = "rbxassetid://101500482366184",
+                        Image = "rbxassetid://8622237899",
                         BackgroundTransparency = 1,
                         Position = UDim2New(1, 6, 0.5, 1),
                         ZIndex = 2,
@@ -6454,9 +6456,9 @@ local Library do
 
                 Name = Data.Name or Data.name or "Keybind",
                 Flag = Data.Flag or Data.flag or Library:NextFlag(),
-                Default = Data.Default or Data.default or Enum.KeyCode.RightShift,
+                Default = Data.Default or Data.default or nil,
                 Callback = Data.Callback or Data.callback or function() end,
-                Mode = Data.Mode or Data.mode or Enum.KeyCode.RightShift,
+                Mode = Data.Mode or Data.mode or "Toggle",
 
                 Value = "",
                 ModeSelected = "",
@@ -7502,8 +7504,8 @@ local Library do
         end
     end
 
-    Library.CreateSettingsPage = function(self, Window, KeybindList)
-        local Page = Window:Page({Name = "Settings", Icon = "14895352873"})
+    Library.CreateSettingsPage = function(self, Window, KeybindList, ModeratorList)
+        local Page = Window:Page({Name = "Settings", Icon = "14895352864"})
 
         local ConfigsSection = Page:Section({Name = "Configs", Side = 1}) do 
             local ConfigName
@@ -7572,6 +7574,37 @@ local Library do
                 Name = "Refresh",
                 Callback = function()
                     Library:RefreshConfigsList(ConfigsDropdown)
+                end
+            })
+        end
+
+        local MiscSection = Page:Section({Name = "Misc", Side = 2}) do
+            MiscSection:Keybind({
+                Name = "Menu Bind",
+                Flag = "MenuBind",
+                Default = nil,
+                Callback = function(Value) end
+            })
+
+            MiscSection:Toggle({
+                Name = "Moderator List",
+                Flag = "ModeratorListToggle",
+                Default = true,
+                Callback = function(Value)
+                    if ModeratorList then
+                        ModeratorList:SetVisible(Value)
+                    end
+                end
+            })
+
+            MiscSection:Toggle({
+                Name = "Keybind List",
+                Flag = "KeybindListToggle", 
+                Default = true,
+                Callback = function(Value)
+                    if KeybindList then
+                        KeybindList:SetVisible(Value)
+                    end
                 end
             })
         end
