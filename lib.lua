@@ -1879,7 +1879,7 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(0, 0.5),
                     BackgroundTransparency = 0.30000001192092896,
-                    Position = UDim2New(0, 20, 0.5, 20),
+                    Position = UDim2New(0, 20, 0.5, -50), -- Positioned higher to avoid moderator panel
                     Size = UDim2New(0, 100, 0, 40), -- Start with minimal size (just header)
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.X, -- Only auto-size width, not height
@@ -2025,13 +2025,13 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
-                    BackgroundTransparency = 0.9,
+                    BackgroundTransparency = 1, -- Start transparent
                     Size = UDim2New(1, 0, 0, 20),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = FromRGB(16, 16, 18),
+                    BackgroundColor3 = FromRGB(20, 20, 22), -- Darker background for active keybinds
                     Visible = (Key and Key ~= "" and Key ~= "None")
-                })
+                })  NewKey:AddToTheme({BackgroundColor3 = "Element"})
                 
                 -- Add corner radius to keybind background
                 Instances:Create("UICorner", {
@@ -2104,9 +2104,11 @@ local Library do
                     if Bool then 
                         NewKeyText:Tween(nil, {Position = UDim2New(0, 15, 0.5, 0), TextTransparency = 0})
                         NewKeyAccent:Tween(nil, {BackgroundTransparency = 0})
+                        NewKey:Tween(nil, {BackgroundTransparency = 0}) -- Show background when active
                     else
                         NewKeyText:Tween(nil, {Position = UDim2New(0, 0, 0.5, 0), TextTransparency = 0.3})
                         NewKeyAccent:Tween(nil, {BackgroundTransparency = 1})
+                        NewKey:Tween(nil, {BackgroundTransparency = 1}) -- Hide background when inactive
                     end
                 end
 
@@ -3609,11 +3611,12 @@ local Library do
                 end
             end
 
-            --[[Library:Connect(UserInputService.InputBegan, function(Input)
-                if tostring(Input.KeyCode) == Library.MenuKeybind or tostring(Input.UserInputType) == Library.MenuKeybind then
+            Library:Connect(UserInputService.InputBegan, function(Input)
+                local menuKey = Library.Flags["MenuKeybind"] and Library.Flags["MenuKeybind"].Key or Library.MenuKeybind
+                if tostring(Input.KeyCode) == menuKey or tostring(Input.UserInputType) == menuKey then
                     Window:SetOpen(not Window.IsOpen)
                 end
-            end)]]
+            end)
 
             Window:SetCenter()
             task.wait()
