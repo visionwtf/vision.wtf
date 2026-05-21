@@ -2025,12 +2025,19 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
-                    BackgroundTransparency = 1,
+                    BackgroundTransparency = 0.9,
                     Size = UDim2New(1, 0, 0, 20),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = FromRGB(255, 255, 255),
+                    BackgroundColor3 = FromRGB(16, 16, 18),
                     Visible = (Key and Key ~= "" and Key ~= "None")
+                })
+                
+                -- Add corner radius to keybind background
+                Instances:Create("UICorner", {
+                    Parent = NewKey.Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 4)
                 })
                 
                 local NewKeyAccent = Instances:Create("Frame", {
@@ -6649,67 +6656,7 @@ local Library do
                     return RGBSequence{RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.AccentGradient)}
                 end})
                 
-                Items["Toggle"] = Instances:Create("TextButton", {
-                    Parent = Items["Modes"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = FromRGB(0, 0, 0),
-                    TextTransparency = 0.30000001192092896,
-                    Text = "Toggle",
-                    AutoButtonColor = false,
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(0.35, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    Position = UDim2New(0, 0, 0, -1),
-                    BorderSizePixel = 0,
-                    ZIndex = 2,
-                    TextSize = 12,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                })  Items["Toggle"]:AddToTheme({TextColor3 = function()
-                    return Library.Theme.Text
-                end})
-                
-                Items["Hold"] = Instances:Create("TextButton", {
-                    Parent = Items["Modes"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = FromRGB(240, 240, 240),
-                    TextTransparency = 0.20000000298023224,
-                    Text = "Hold",
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    AutoButtonColor = false,
-                    AnchorPoint = Vector2New(0, 0),
-                    Size = UDim2New(0.35, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    Position = UDim2New(0.35, 0, 0, -1),
-                    BorderSizePixel = 0,
-                    ZIndex = 2,
-                    TextSize = 12,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                })  Items["Hold"]:AddToTheme({TextColor3 = function()
-                    return Library.Theme.Text
-                end})        
-                
-                Items["Always"] = Instances:Create("TextButton", {
-                    Parent = Items["Modes"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = FromRGB(240, 240, 240),
-                    TextTransparency = 0.20000000298023224,
-                    Text = "Always",
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    AutoButtonColor = false,
-                    AnchorPoint = Vector2New(0, 0),
-                    Size = UDim2New(0.3, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    Position = UDim2New(0.7, 0, 0, -1),
-                    BorderSizePixel = 0,
-                    ZIndex = 2,
-                    TextSize = 12,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                })  Items["Always"]:AddToTheme({TextColor3 = function()
-                    return Library.Theme.Text
-                end})              
+                -- Mode selector removed - defaulting to Toggle mode only              
             end
 
             --Keybind.Section.Items["Fade"].Instance.Size = UDim2New(1, 0, 0, Keybind.Section.Items["Content"].Instance.AbsoluteSize.X - 180)
@@ -6743,61 +6690,10 @@ local Library do
                 end
             end
 
-            function Keybind:SetMode(Mode) -- hard coded
-                if Mode == "Toggle" then
-                    Items["Background"]:Tween(TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0), Size = UDim2New(0.35, 0, 1, 0)})
-                    Items["Toggle"]:ChangeItemTheme({TextColor3 = function()
-                        return FromRGB(0, 0, 0)
-                    end})
-                    Items["Toggle"]:Tween(nil, {TextColor3 = FromRGB(0, 0, 0)})
-
-                    Items["Hold"]:ChangeItemTheme({TextColor3 = function()
-                        return Library.Theme.Text
-                    end})
-                    Items["Hold"]:Tween(nil, {TextColor3 = Library.Theme.Text})
-
-                    Items["Always"]:ChangeItemTheme({TextColor3 = function()
-                        return Library.Theme.Text
-                    end})
-                    Items["Always"]:Tween(nil, {TextColor3 = Library.Theme.Text})
-                elseif Mode == "Hold" then
-                    Items["Background"]:Tween(TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0.35, 0, 0, 0), Size = UDim2New(0.35, 0, 1, 0)})
-                
-                    Items["Toggle"]:ChangeItemTheme({TextColor3 = function()
-                        return Library.Theme.Text
-                    end})
-                    Items["Toggle"]:Tween(nil, {TextColor3 = Library.Theme.Text})
-
-                    Items["Hold"]:ChangeItemTheme({TextColor3 = function()
-                        return FromRGB(0, 0, 0)
-                    end})
-                    Items["Hold"]:Tween(nil, {TextColor3 = FromRGB(0, 0, 0)})
-
-                    Items["Always"]:ChangeItemTheme({TextColor3 = function()
-                        return Library.Theme.Text
-                    end})
-                    Items["Always"]:Tween(nil, {TextColor3 = Library.Theme.Text})
-                elseif Mode == "Always" then
-                    Items["Background"]:Tween(TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0.7, 0, 0, 0), Size = UDim2New(0.3, 0, 1, 0)})
-                
-                    Items["Toggle"]:ChangeItemTheme({TextColor3 = function()
-                        return Library.Theme.Text
-                    end})
-                    Items["Toggle"]:Tween(nil, {TextColor3 = Library.Theme.Text})
-
-                    Items["Hold"]:ChangeItemTheme({TextColor3 = function()
-                        return Library.Theme.Text
-                    end})
-                    Items["Hold"]:Tween(nil, {TextColor3 = Library.Theme.Text})
-
-                    Items["Always"]:ChangeItemTheme({TextColor3 = function()
-                        return FromRGB(0, 0, 0)
-                    end})
-                    Items["Always"]:Tween(nil, {TextColor3 = FromRGB(0, 0, 0)})
-                end
-
+            function Keybind:SetMode(Mode) -- simplified to Toggle mode only
+                -- Always use Toggle mode - no UI changes needed
                 Library.Flags[Keybind.Flag] = {
-                    Mode = Keybind.ModeSelected,
+                    Mode = "Toggle",
                     Key = Keybind.Key,
                     Toggled = Keybind.Toggled
                 }
@@ -6808,16 +6704,11 @@ local Library do
             end
 
             function Keybind:Press(Bool)
-                if Keybind.ModeSelected == "Toggle" then 
-                    Keybind.Toggled = not Keybind.Toggled
-                elseif Keybind.ModeSelected == "Hold" then 
-                    Keybind.Toggled = Bool
-                elseif Keybind.ModeSelected == "Always" then 
-                    Keybind.Toggled = true
-                end
+                -- Always use Toggle mode behavior
+                Keybind.Toggled = not Keybind.Toggled
 
                 Library.Flags[Keybind.Flag] = {
-                    Mode = Keybind.ModeSelected,
+                    Mode = "Toggle",
                     Key = Keybind.Key,
                     Toggled = Keybind.Toggled
                 }
@@ -6830,7 +6721,7 @@ local Library do
             end
 
             function Keybind:Get()
-                return Keybind.Key, Keybind.ModeSelected, Keybind.Toggled
+                return Keybind.Key, "Toggle", Keybind.Toggled
             end
 
             function Keybind:Set(Key)
@@ -6860,13 +6751,9 @@ local Library do
                     local RealKey = Key.Key == "Backspace" and "None" or Key.Key
                     Keybind.Key = tostring(Key.Key)
 
-                    if Key.ModeSelected then
-                        Keybind.ModeSelected = Key.Mode
-                        Keybind:SetMode(Key.Mode)
-                    else
-                        Keybind.ModeSelected = "Toggle"
-                        Keybind:SetMode("Toggle")
-                    end
+                    -- Always use Toggle mode
+                    Keybind.ModeSelected = "Toggle"
+                    Keybind:SetMode("Toggle")
 
                     local KeyString = Keys[Keybind.Key] or StringGSub(tostring(RealKey), "Enum.", "") or RealKey
                     local TextToDisplay = KeyString and StringGSub(StringGSub(KeyString, "KeyCode.", ""), "UserInputType.", "") or "None"
@@ -6881,9 +6768,10 @@ local Library do
                     end
 
                     pcall(Update)
-                elseif TableFind({"Toggle", "Hold", "Always"}, Key) then
-                    Keybind.ModeSelected = Key
-                    Keybind:SetMode(Key)
+                elseif Key == "Toggle" then
+                    -- Only Toggle mode is supported now
+                    Keybind.ModeSelected = "Toggle"
+                    Keybind:SetMode("Toggle")
 
                     if Data.Callback then 
                         Library:SafeCall(Data.Callback, Keybind.Toggled)
@@ -6937,21 +6825,9 @@ local Library do
                 end
 
                 if tostring(Input.KeyCode) == Keybind.Key then
-                    if Keybind.ModeSelected == "Toggle" then 
-                        Keybind:Press()
-                    elseif Keybind.ModeSelected == "Hold" then 
-                        Keybind:Press(true)
-                    elseif Keybind.ModeSelected == "Always" then 
-                        Keybind:Press(true)
-                    end
+                    Keybind:Press()
                 elseif tostring(Input.UserInputType) == Keybind.Key then
-                    if Keybind.ModeSelected == "Toggle" then 
-                        Keybind:Press()
-                    elseif Keybind.ModeSelected == "Hold" then 
-                        Keybind:Press(true)
-                    elseif Keybind.ModeSelected == "Always" then 
-                        Keybind:Press(true)
-                    end
+                    Keybind:Press()
                 end
 
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -6968,54 +6844,25 @@ local Library do
             end)
 
             Library:Connect(UserInputService.InputEnded, function(Input)
-                if Keybind.Value == "None" then
-                    return
-                end
-
-                if tostring(Input.KeyCode) == Keybind.Key then
-                    if Keybind.ModeSelected == "Hold" then 
-                        Keybind:Press(false)
-                    elseif Keybind.ModeSelected == "Always" then 
-                        Keybind:Press(true)
-                    end
-                elseif tostring(Input.UserInputType) == Keybind.Key then
-                    if Keybind.ModeSelected == "Hold" then 
-                        Keybind:Press(false)
-                    elseif Keybind.ModeSelected == "Always" then 
-                        Keybind:Press(true)
-                    end
-                end
+                -- No special handling needed for Toggle mode
             end)
 
-            Items["Toggle"]:Connect("MouseButton1Down", function()
-                Keybind.ModeSelected = "Toggle"
-                Keybind:SetMode("Toggle")
-            end)
-
-            Items["Hold"]:Connect("MouseButton1Down", function()
-                Keybind.ModeSelected = "Hold"
-                Keybind:SetMode("Hold")
-            end)
-
-            Items["Always"]:Connect("MouseButton1Down", function()
-                Keybind.ModeSelected = "Always"
-                Keybind:SetMode("Always")
-            end)
+            -- Mode selector buttons removed - only Toggle mode supported
 
             if Keybind.Default then 
                 Keybind:Set({
-                    Mode = Keybind.Mode or "Toggle",
+                    Mode = "Toggle",
                     Key = Keybind.Default,
                 })
             else
                 -- Initialize with no key when Default is nil
                 Keybind.Value = "None"
-                Keybind.ModeSelected = Keybind.Mode or "Toggle"
+                Keybind.ModeSelected = "Toggle"
                 Items["KeyButton"].Instance.Text = "None"
-                Keybind:SetMode(Keybind.ModeSelected)
+                Keybind:SetMode("Toggle")
                 
                 Library.Flags[Keybind.Flag] = {
-                    Mode = Keybind.ModeSelected,
+                    Mode = "Toggle",
                     Key = nil,
                     Toggled = false
                 }
@@ -7027,6 +6874,168 @@ local Library do
 
             Keybind.Section.Elements[#Keybind.Section.Elements+1] = Keybind
             return Keybind 
+        end
+
+        -- Compact Keybind Component (for inline use)
+        Library.CompactKeybind = function(self, Data)
+            Data.Name = Data.Name or "Keybind"
+            Data.Flag = Data.Flag or Data.Name
+            Data.Default = Data.Default or nil
+            Data.Mode = Data.Mode or "Toggle"
+            Data.Callback = Data.Callback or function() end
+
+            local CompactKeybind = {
+                Section = Data.Section,
+                Name = Data.Name,
+                Flag = Data.Flag,
+                Key = Data.Default,
+                ModeSelected = "Toggle", -- Always use Toggle mode
+                Toggled = false,
+                Value = "None",
+                Picking = false
+            }
+
+            -- Create compact keybind button (square, shows key abbreviation)
+            local Items = {}
+            
+            Items["CompactKeybind"] = Instances:Create("TextButton", {
+                Parent = Data.Parent,
+                Name = "\0",
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(235, 235, 235),
+                Text = "None",
+                AutoButtonColor = false,
+                BackgroundColor3 = FromRGB(16, 16, 18),
+                BorderSizePixel = 1,
+                BorderColor3 = FromRGB(25, 25, 28),
+                Size = UDim2New(0, 35, 0, 20),
+                TextSize = 10,
+                Position = Data.Position or UDim2New(1, -40, 0, 0)
+            })
+            
+            -- Add corner radius
+            Instances:Create("UICorner", {
+                Parent = Items["CompactKeybind"].Instance,
+                Name = "\0",
+                CornerRadius = UDimNew(0, 3)
+            })
+            
+            Items["CompactKeybind"]:AddToTheme({
+                TextColor3 = "Text",
+                BackgroundColor3 = "Element",
+                BorderColor3 = "Outline"
+            })
+
+            -- Key abbreviation function
+            local function GetKeyAbbreviation(key)
+                local abbreviations = {
+                    ["LeftShift"] = "LS",
+                    ["RightShift"] = "RS", 
+                    ["LeftControl"] = "LC",
+                    ["RightControl"] = "RC",
+                    ["LeftAlt"] = "LA",
+                    ["RightAlt"] = "RA",
+                    ["MouseButton1"] = "M1",
+                    ["MouseButton2"] = "M2",
+                    ["MouseButton3"] = "M3",
+                    ["Space"] = "SPC",
+                    ["Return"] = "ENT",
+                    ["Backspace"] = "BS",
+                    ["Delete"] = "DEL",
+                    ["Insert"] = "INS",
+                    ["Home"] = "HM",
+                    ["End"] = "END",
+                    ["PageUp"] = "PU",
+                    ["PageDown"] = "PD"
+                }
+                
+                if abbreviations[key] then
+                    return abbreviations[key]
+                elseif key and #key == 1 then
+                    return key:upper()
+                elseif key and key:match("^F%d+$") then
+                    return key
+                else
+                    return key or "None"
+                end
+            end
+
+            function CompactKeybind:Set(Key)
+                if Key and tostring(Key):find("Enum") then 
+                    CompactKeybind.Key = tostring(Key)
+                    local KeyName = Key.Name == "Backspace" and "None" or Key.Name
+                    local KeyString = KeyName or "None"
+                    local TextToDisplay = GetKeyAbbreviation(KeyString)
+                    
+                    CompactKeybind.Value = TextToDisplay
+                    Items["CompactKeybind"].Instance.Text = TextToDisplay
+
+                    Library.Flags[CompactKeybind.Flag] = {
+                        Mode = CompactKeybind.ModeSelected,
+                        Key = CompactKeybind.Key,
+                        Toggled = CompactKeybind.Toggled
+                    }
+
+                    if Data.Callback then 
+                        Library:SafeCall(Data.Callback, CompactKeybind.Toggled)
+                    end
+                end
+                
+                CompactKeybind.Picking = false
+            end
+
+            function CompactKeybind:Press(Bool)
+                -- Always use Toggle mode behavior
+                CompactKeybind.Toggled = not CompactKeybind.Toggled
+
+                Library.Flags[CompactKeybind.Flag] = {
+                    Mode = "Toggle",
+                    Key = CompactKeybind.Key,
+                    Toggled = CompactKeybind.Toggled
+                }
+
+                if Data.Callback then 
+                    Library:SafeCall(Data.Callback, CompactKeybind.Toggled)
+                end
+            end
+
+            -- Click to set keybind
+            Items["CompactKeybind"]:Connect("MouseButton1Click", function()
+                CompactKeybind.Picking = true 
+                Items["CompactKeybind"].Instance.Text = "..."
+
+                local InputBegan
+                InputBegan = UserInputService.InputBegan:Connect(function(Input)
+                    if Input.UserInputType == Enum.UserInputType.Keyboard then 
+                        CompactKeybind:Set(Input.KeyCode)
+                    else
+                        CompactKeybind:Set(Input.UserInputType)
+                    end
+
+                    InputBegan:Disconnect()
+                    InputBegan = nil
+                end)
+            end)
+
+            -- Handle input for keybind activation
+            Library:Connect(UserInputService.InputBegan, function(Input)
+                if CompactKeybind.Picking then return end
+                
+                local Key = Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode or Input.UserInputType
+                
+                if tostring(Key) == CompactKeybind.Key then
+                    CompactKeybind:Press()
+                end
+            end)
+
+            -- No InputEnded handling needed for Toggle mode
+
+            -- Set default key if provided
+            if Data.Default then
+                CompactKeybind:Set(Data.Default)
+            end
+
+            return CompactKeybind
         end
 
         Library.Sections.Textbox = function(self, Data)
