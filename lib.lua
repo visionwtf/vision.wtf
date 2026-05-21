@@ -2024,7 +2024,8 @@ local Library do
                     Size = UDim2New(1, 0, 0, 20),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
+                    BackgroundColor3 = FromRGB(255, 255, 255),
+                    Visible = (Key and Key ~= "" and Key ~= "None")
                 })
                 
                 local NewKeyAccent = Instances:Create("Frame", {
@@ -2059,7 +2060,7 @@ local Library do
                     FontFace = Library.Font,
                     TextColor3 = FromRGB(255, 255, 255),
                     TextTransparency = 0.30000001192092896,
-                    Text = Name .. " ["..Key.."]",
+                    Text = (Key and Key ~= "" and Key ~= "None") and (Name .. " ["..Key.."]") or "",
                     Size = UDim2New(0, 0, 0, 15),
                     AnchorPoint = Vector2New(0, 0.5),
                     BorderSizePixel = 0,
