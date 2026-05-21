@@ -1880,9 +1880,9 @@ local Library do
                     AnchorPoint = Vector2New(0, 0.5),
                     BackgroundTransparency = 0.30000001192092896,
                     Position = UDim2New(0, 20, 0.5, 20),
-                    Size = UDim2New(0, 100, 0, 30),
+                    Size = UDim2New(0, 100, 0, 40), -- Start with minimal size (just header)
                     BorderSizePixel = 0,
-                    AutomaticSize = Enum.AutomaticSize.XY,
+                    AutomaticSize = Enum.AutomaticSize.X, -- Only auto-size width, not height
                     BackgroundColor3 = FromRGB(27, 25, 29),
                     Active = true
                 })  Items["KeybindsList"]:AddToTheme({BackgroundColor3 = "Section Background"})
@@ -1977,7 +1977,7 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 0, 0, 40),
-                    Size = UDim2New(1, 12, 0, 0),
+                    Size = UDim2New(1, 12, 0, 0), -- Start with 0 height
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundColor3 = FromRGB(255, 255, 255)
@@ -1990,11 +1990,12 @@ local Library do
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
                 
-                Instances:Create("UIPadding", {
+                -- Only add padding when there are keybinds
+                local ContentPadding = Instances:Create("UIPadding", {
                     Parent = Items["Content"].Instance,
                     Name = "\0",
-                    PaddingTop = UDimNew(0, 8),
-                    PaddingBottom = UDimNew(0, 8),
+                    PaddingTop = UDimNew(0, 0), -- Start with no padding
+                    PaddingBottom = UDimNew(0, 0),
                     PaddingRight = UDimNew(0, 8),
                     PaddingLeft = UDimNew(0, 8)
                 })
@@ -2078,6 +2079,8 @@ local Library do
                     else
                         NewKey.Instance.Visible = false
                     end
+                    -- Update keybind list size after visibility change
+                    KeybindList:UpdateSize()
                 end
 
                 function NewKey:SetStatus(Bool)
@@ -2091,6 +2094,30 @@ local Library do
                 end
 
                 return NewKey
+            end
+
+            function KeybindList:UpdateSize()
+                -- Count visible keybinds
+                local visibleCount = 0
+                for _, child in pairs(Items["Content"].Instance:GetChildren()) do
+                    if child:IsA("TextButton") and child.Visible then
+                        visibleCount = visibleCount + 1
+                    end
+                end
+
+                -- Update padding and size based on visible keybinds
+                if visibleCount > 0 then
+                    ContentPadding.Instance.PaddingTop = UDimNew(0, 8)
+                    ContentPadding.Instance.PaddingBottom = UDimNew(0, 8)
+                    -- Let AutomaticSize handle the height
+                    Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.XY
+                else
+                    ContentPadding.Instance.PaddingTop = UDimNew(0, 0)
+                    ContentPadding.Instance.PaddingBottom = UDimNew(0, 0)
+                    -- Set to minimal size when empty
+                    Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.X
+                    Items["KeybindsList"].Instance.Size = UDim2New(0, 100, 0, 40)
+                end
             end
 
             return KeybindList
