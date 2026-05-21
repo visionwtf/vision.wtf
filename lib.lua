@@ -2078,6 +2078,10 @@ local Library do
                 })  NewKeyText:AddToTheme({TextColor3 = "Text"})
 
                 function NewKey:Set(Name, Key)
+                    -- Safety checks
+                    if not NewKeyText or not NewKeyText.Instance then return end
+                    if not NewKey or not NewKey.Instance then return end
+                    
                     -- Only show keybind if it has a valid key
                     if Key and Key ~= "" and Key ~= "None" then
                         NewKeyText.Instance.Text = Name .. " [" .. Key .. "]"
@@ -2086,7 +2090,7 @@ local Library do
                         NewKey.Instance.Visible = false
                     end
                     -- Update keybind list size after visibility change
-                    KeybindList:UpdateSize()
+                    pcall(function() KeybindList:UpdateSize() end)
                 end
 
                 function NewKey:SetStatus(Bool)
@@ -2103,6 +2107,14 @@ local Library do
             end
 
             function KeybindList:UpdateSize()
+                -- Safety checks
+                if not Items or not Items["Content"] or not Items["Content"].Instance then 
+                    return 
+                end
+                if not Items["KeybindsList"] or not Items["KeybindsList"].Instance then 
+                    return 
+                end
+                
                 -- Count visible keybinds
                 local visibleCount = 0
                 for _, child in pairs(Items["Content"].Instance:GetChildren()) do
@@ -2111,15 +2123,19 @@ local Library do
                     end
                 end
 
+                -- Find the ContentPadding object
+                local ContentPadding = Items["Content"].Instance:FindFirstChild("UIPadding")
+                if not ContentPadding then return end
+
                 -- Update padding and size based on visible keybinds
                 if visibleCount > 0 then
-                    ContentPadding.Instance.PaddingTop = UDimNew(0, 8)
-                    ContentPadding.Instance.PaddingBottom = UDimNew(0, 8)
+                    ContentPadding.PaddingTop = UDimNew(0, 8)
+                    ContentPadding.PaddingBottom = UDimNew(0, 8)
                     -- Let AutomaticSize handle the height
                     Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.XY
                 else
-                    ContentPadding.Instance.PaddingTop = UDimNew(0, 0)
-                    ContentPadding.Instance.PaddingBottom = UDimNew(0, 0)
+                    ContentPadding.PaddingTop = UDimNew(0, 0)
+                    ContentPadding.PaddingBottom = UDimNew(0, 0)
                     -- Set to minimal size when empty
                     Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.X
                     Items["KeybindsList"].Instance.Size = UDim2New(0, 100, 0, 40)
@@ -6700,14 +6716,18 @@ local Library do
 
             local KeyListItem 
 
-            if Library.KeyList then 
-                KeyListItem = Library.KeyList:Add("", "")
+            if Library.KeyList and Library.KeyList.Add then 
+                pcall(function()
+                    KeyListItem = Library.KeyList:Add("", "")
+                end)
             end
 
             local Update = function()
-                if KeyListItem then 
-                    KeyListItem:Set(Data.Name, Keybind.Value)
-                    KeyListItem:SetStatus(Keybind.Toggled)
+                if KeyListItem and KeyListItem.Set then 
+                    pcall(function()
+                        KeyListItem:Set(Data.Name, Keybind.Value)
+                        KeyListItem:SetStatus(Keybind.Toggled)
+                    end)
                 end
             end
 
@@ -6806,7 +6826,7 @@ local Library do
                     Library:SafeCall(Data.Callback, Keybind.Toggled)
                 end
 
-                Update()
+                pcall(Update)
             end
 
             function Keybind:Get()
@@ -6835,7 +6855,7 @@ local Library do
                         Library:SafeCall(Data.Callback, Keybind.Toggled)
                     end
 
-                    Update()
+                    pcall(Update)
                 elseif type(Key) == "table" then
                     local RealKey = Key.Key == "Backspace" and "None" or Key.Key
                     Keybind.Key = tostring(Key.Key)
@@ -6860,7 +6880,7 @@ local Library do
                         Library:SafeCall(Data.Callback, Keybind.Toggled)
                     end
 
-                    Update()
+                    pcall(Update)
                 elseif TableFind({"Toggle", "Hold", "Always"}, Key) then
                     Keybind.ModeSelected = Key
                     Keybind:SetMode(Key)
@@ -6869,7 +6889,7 @@ local Library do
                         Library:SafeCall(Data.Callback, Keybind.Toggled)
                     end
 
-                    Update()
+                    pcall(Update)
                 end
 
                 --Items["KeyButton"].Instance.Position = UDim2New(0, Data.Text.Instance.TextBounds.X + 12, 0, 0)
