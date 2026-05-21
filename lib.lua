@@ -2008,7 +2008,12 @@ local Library do
             end
 
             function KeybindList:SetVisibility(Bool)
-                Items["KeybindsList"].Instance.Visible = false
+                Items["KeybindsList"].Instance.Visible = Bool
+            end
+            
+            -- Add alias for potential typo
+            function KeybindList:SetVisiblity(Bool)
+                return KeybindList:SetVisibility(Bool)
             end
 
             function KeybindList:Add(Name, Key)
