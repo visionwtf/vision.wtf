@@ -886,29 +886,20 @@ local Library do
     end
 
     Library.RefreshConfigsList = function(self, Element)
-        local CurrentList = { }
         local List = { }
 
-        local ConfigFolderName = StringGSub(Library.Folders.Configs, Library.Folders.Directory .. "/", "")
+        if not isfolder(Library.Folders.Configs) then
+            makefolder(Library.Folders.Configs)
+        end
 
         for Index, Value in listfiles(Library.Folders.Configs) do
-            local FileName = StringGSub(Value, Library.Folders.Directory .. "\\" .. ConfigFolderName .. "\\", "")
-            List[Index] = FileName
-        end
-
-        local IsNew = #List ~= CurrentList
-
-        if not IsNew then
-            for Index = 1, #List do
-                if List[Index] ~= CurrentList[Index] then
-                    IsNew = true
-                    break
-                end
+            local FileName = Value:match("([^/\\]+)$") -- Get just the filename with extension
+            if FileName and FileName:match("%.json$") then -- Check if it's a .json file
+                table.insert(List, FileName)
             end
-        else
-            CurrentList = List
-            Element:Refresh(CurrentList)
         end
+
+        Element:Refresh(List)
     end
 
     Library.ChangeItemTheme = function(self, Item, Properties)
@@ -4389,7 +4380,7 @@ local Library do
                 Side = Data.Side or Data.side or 1,
 
                 Items = { },
-                IsActive = true,
+                IsActive = false, -- Start collapsed by default
                 Elements = { }
             }
 
@@ -4507,19 +4498,20 @@ local Library do
                     Size = UDim2New(0, 26, 0, 16),
                     ZIndex = 2,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                })  --Items["Toggle"]:AddToTheme({BackgroundColor3 = "Accent"})
+                    BackgroundColor3 = Library.Theme.Element -- Start with Element color for "off" state
+                })  Items["Toggle"]:AddToTheme({BackgroundColor3 = "Element"}) -- Set theme to Element for "off" state
                 
                 Items["Circle"] = Instances:Create("Frame", {
                     Parent = Items["Toggle"].Instance,
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
-                    AnchorPoint = Vector2New(1, 0.5),
-                    Position = UDim2New(1, -4, 0.5, 0),
+                    AnchorPoint = Vector2New(0, 0.5), -- Start in "off" position
+                    Position = UDim2New(0, 4, 0.5, 0), -- Start in "off" position
                     Size = UDim2New(0, 8, 0, 8),
                     ZIndex = 2,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
+                    BackgroundColor3 = FromRGB(255, 255, 255),
+                    BackgroundTransparency = 0.6 -- Start dimmed for "off" state
                 })  Items["Circle"]:AddToTheme({BackgroundColor3 = "Text"})
                 
                 Instances:Create("UICorner", {
@@ -4538,7 +4530,8 @@ local Library do
                     Parent = Items["Toggle"].Instance,
                     Name = "\0",
                     Rotation = -115,
-                    Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(143, 143, 143))}
+                    Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(143, 143, 143))},
+                    Enabled = false -- Start disabled for "off" state
                 })  Items["Gradient"]:AddToTheme({Color = function()
                     return RGBSequence{RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.AccentGradient)}
                 end})
@@ -4672,7 +4665,8 @@ local Library do
                     Size = UDim2New(1, -2, 1, -56),
                     ZIndex = 2,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(24, 22, 25)
+                    BackgroundColor3 = FromRGB(24, 22, 25),
+                    Visible = false -- Start hidden since sections start collapsed
                 })  Items["Background"]:AddToTheme({BackgroundColor3 = "Section Background"})
                 
                 Items["Content"] = Instances:Create("Frame", {
@@ -4684,7 +4678,8 @@ local Library do
                     Size = UDim2New(1, -24, 0, 0),
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.Y,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
+                    BackgroundColor3 = FromRGB(255, 255, 255),
+                    Visible = false -- Start hidden since sections start collapsed
                 })
                 
                 Instances:Create("UIListLayout", {
@@ -6944,6 +6939,18 @@ local Library do
                     Mode = Keybind.Mode or "Toggle",
                     Key = Keybind.Default,
                 })
+            else
+                -- Initialize with no key when Default is nil
+                Keybind.Value = "None"
+                Keybind.ModeSelected = Keybind.Mode or "Toggle"
+                Items["KeyButton"].Instance.Text = "None"
+                Keybind:SetMode(Keybind.ModeSelected)
+                
+                Library.Flags[Keybind.Flag] = {
+                    Mode = Keybind.ModeSelected,
+                    Key = nil,
+                    Toggled = false
+                }
             end
 
             Library.SetFlags[Keybind.Flag] = function(Value)
@@ -7505,7 +7512,7 @@ local Library do
     end
 
     Library.CreateSettingsPage = function(self, Window, KeybindList, ModeratorList)
-        local Page = Window:Page({Name = "Settings", Icon = "14895352864"})
+        local Page = Window:Page({Name = "Settings", Icon = "8622237899"})
 
         local ConfigsSection = Page:Section({Name = "Configs", Side = 1}) do 
             local ConfigName
@@ -7534,10 +7541,31 @@ local Library do
                 Name = "Create",
                 Callback = function()
                     if ConfigName and ConfigName ~= "" then
-                        if not isfile(Library.Folders.Configs .. "/" .. ConfigName .. ".json") then
-                            writefile(Library.Folders.Configs .. "/" .. ConfigName .. ".json", Library:GetConfig())
+                        local configPath = Library.Folders.Configs .. "/" .. ConfigName .. ".json"
+                        if not isfile(configPath) then
+                            writefile(configPath, Library:GetConfig())
                             Library:RefreshConfigsList(ConfigsDropdown)
+                            Library:Notification({
+                                Title = "Success",
+                                Description = "Config '" .. ConfigName .. "' created",
+                                Duration = 3,
+                                Icon = "7733674079"
+                            })
+                        else
+                            Library:Notification({
+                                Title = "Error", 
+                                Description = "Config already exists",
+                                Duration = 3,
+                                Icon = "7733658504"
+                            })
                         end
+                    else
+                        Library:Notification({
+                            Title = "Error",
+                            Description = "Enter a config name",
+                            Duration = 3,
+                            Icon = "7733658504"
+                        })
                     end
                 end
             })
@@ -7546,8 +7574,24 @@ local Library do
                 Name = "Delete",
                 Callback = function()
                     if ConfigSelected then
-                        Library:DeleteConfig(ConfigSelected)
-                        Library:RefreshConfigsList(ConfigsDropdown)
+                        local configPath = Library.Folders.Configs .. "/" .. ConfigSelected
+                        if isfile(configPath) then
+                            delfile(configPath)
+                            Library:RefreshConfigsList(ConfigsDropdown)
+                            Library:Notification({
+                                Title = "Success",
+                                Description = "Config deleted",
+                                Duration = 3,
+                                Icon = "7733674079"
+                            })
+                        end
+                    else
+                        Library:Notification({
+                            Title = "Error",
+                            Description = "Select a config to delete",
+                            Duration = 3,
+                            Icon = "7733658504"
+                        })
                     end
                 end
             })
@@ -7556,7 +7600,32 @@ local Library do
                 Name = "Load",
                 Callback = function()
                     if ConfigSelected then
-                        Library:LoadConfig(readfile(Library.Folders.Configs .. "/" .. ConfigSelected))
+                        local configPath = Library.Folders.Configs .. "/" .. ConfigSelected
+                        if isfile(configPath) then
+                            local success, result = Library:LoadConfig(readfile(configPath))
+                            if success then
+                                Library:Notification({
+                                    Title = "Success",
+                                    Description = "Config loaded",
+                                    Duration = 3,
+                                    Icon = "7733674079"
+                                })
+                            else
+                                Library:Notification({
+                                    Title = "Error",
+                                    Description = "Failed to load config",
+                                    Duration = 3,
+                                    Icon = "7733658504"
+                                })
+                            end
+                        end
+                    else
+                        Library:Notification({
+                            Title = "Error",
+                            Description = "Select a config to load",
+                            Duration = 3,
+                            Icon = "7733658504"
+                        })
                     end
                 end
             })
@@ -7565,7 +7634,21 @@ local Library do
                 Name = "Save",
                 Callback = function()
                     if ConfigSelected then
-                        writefile(Library.Folders.Configs .. "/" .. ConfigSelected, Library:GetConfig())
+                        local configPath = Library.Folders.Configs .. "/" .. ConfigSelected
+                        writefile(configPath, Library:GetConfig())
+                        Library:Notification({
+                            Title = "Success",
+                            Description = "Config saved",
+                            Duration = 3,
+                            Icon = "7733674079"
+                        })
+                    else
+                        Library:Notification({
+                            Title = "Error",
+                            Description = "Select a config to save",
+                            Duration = 3,
+                            Icon = "7733658504"
+                        })
                     end
                 end
             })
@@ -7574,8 +7657,17 @@ local Library do
                 Name = "Refresh",
                 Callback = function()
                     Library:RefreshConfigsList(ConfigsDropdown)
+                    Library:Notification({
+                        Title = "Success",
+                        Description = "Config list refreshed",
+                        Duration = 3,
+                        Icon = "7733674079"
+                    })
                 end
             })
+
+            -- Refresh configs list on page creation
+            Library:RefreshConfigsList(ConfigsDropdown)
         end
 
         local MiscSection = Page:Section({Name = "Misc", Side = 2}) do
