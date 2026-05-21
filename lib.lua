@@ -76,9 +76,9 @@ local Library do
         FadeSpeed = 0.2,
 
         Folders = {
-            Directory = "lyapossss",
-            Configs = "lyapossss/Configs",
-            Assets = "lyapossss/Assets",
+            Directory = "vision",
+            Configs = "vision/Configs",
+            Assets = "vision/Assets",
         },
 
         -- Ignore below
@@ -6690,10 +6690,11 @@ local Library do
                 end
             end
 
-            function Keybind:SetMode(Mode) -- simplified to Toggle mode only
-                -- Always use Toggle mode - no UI changes needed
+            function Keybind:SetMode(Mode) -- support both Toggle and Hold modes
+                Keybind.ModeSelected = Mode or "Toggle"
+                
                 Library.Flags[Keybind.Flag] = {
-                    Mode = "Toggle",
+                    Mode = Keybind.ModeSelected,
                     Key = Keybind.Key,
                     Toggled = Keybind.Toggled
                 }
@@ -6704,11 +6705,16 @@ local Library do
             end
 
             function Keybind:Press(Bool)
-                -- Always use Toggle mode behavior
-                Keybind.Toggled = not Keybind.Toggled
+                -- Support both Toggle and Hold modes based on ModeSelected
+                if Keybind.ModeSelected == "Hold" then
+                    Keybind.Toggled = Bool
+                else
+                    -- Default to Toggle mode behavior
+                    Keybind.Toggled = not Keybind.Toggled
+                end
 
                 Library.Flags[Keybind.Flag] = {
-                    Mode = "Toggle",
+                    Mode = Keybind.ModeSelected or "Toggle",
                     Key = Keybind.Key,
                     Toggled = Keybind.Toggled
                 }
@@ -6721,7 +6727,7 @@ local Library do
             end
 
             function Keybind:Get()
-                return Keybind.Key, "Toggle", Keybind.Toggled
+                return Keybind.Key, Keybind.ModeSelected or "Toggle", Keybind.Toggled
             end
 
             function Keybind:Set(Key)
@@ -6751,9 +6757,9 @@ local Library do
                     local RealKey = Key.Key == "Backspace" and "None" or Key.Key
                     Keybind.Key = tostring(Key.Key)
 
-                    -- Always use Toggle mode
-                    Keybind.ModeSelected = "Toggle"
-                    Keybind:SetMode("Toggle")
+                    -- Use specified mode or default to Toggle
+                    Keybind.ModeSelected = Key.Mode or "Toggle"
+                    Keybind:SetMode(Keybind.ModeSelected)
 
                     local KeyString = Keys[Keybind.Key] or StringGSub(tostring(RealKey), "Enum.", "") or RealKey
                     local TextToDisplay = KeyString and StringGSub(StringGSub(KeyString, "KeyCode.", ""), "UserInputType.", "") or "None"
@@ -6825,9 +6831,17 @@ local Library do
                 end
 
                 if tostring(Input.KeyCode) == Keybind.Key then
-                    Keybind:Press()
+                    if Keybind.ModeSelected == "Hold" then
+                        Keybind:Press(true)
+                    else
+                        Keybind:Press()
+                    end
                 elseif tostring(Input.UserInputType) == Keybind.Key then
-                    Keybind:Press()
+                    if Keybind.ModeSelected == "Hold" then
+                        Keybind:Press(true)
+                    else
+                        Keybind:Press()
+                    end
                 end
 
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -6844,25 +6858,35 @@ local Library do
             end)
 
             Library:Connect(UserInputService.InputEnded, function(Input)
-                -- No special handling needed for Toggle mode
+                if Keybind.Value == "None" then
+                    return
+                end
+
+                if Keybind.ModeSelected == "Hold" then
+                    if tostring(Input.KeyCode) == Keybind.Key then
+                        Keybind:Press(false)
+                    elseif tostring(Input.UserInputType) == Keybind.Key then
+                        Keybind:Press(false)
+                    end
+                end
             end)
 
             -- Mode selector buttons removed - only Toggle mode supported
 
             if Keybind.Default then 
                 Keybind:Set({
-                    Mode = "Toggle",
+                    Mode = Keybind.Mode or "Toggle",
                     Key = Keybind.Default,
                 })
             else
                 -- Initialize with no key when Default is nil
                 Keybind.Value = "None"
-                Keybind.ModeSelected = "Toggle"
+                Keybind.ModeSelected = Keybind.Mode or "Toggle"
                 Items["KeyButton"].Instance.Text = "None"
-                Keybind:SetMode("Toggle")
+                Keybind:SetMode(Keybind.ModeSelected)
                 
                 Library.Flags[Keybind.Flag] = {
-                    Mode = "Toggle",
+                    Mode = Keybind.ModeSelected,
                     Key = nil,
                     Toggled = false
                 }
@@ -6889,7 +6913,7 @@ local Library do
                 Name = Data.Name,
                 Flag = Data.Flag,
                 Key = Data.Default,
-                ModeSelected = "Toggle", -- Always use Toggle mode
+                ModeSelected = Data.Mode or "Toggle", -- Allow mode specification
                 Toggled = false,
                 Value = "None",
                 Picking = false
@@ -6985,11 +7009,16 @@ local Library do
             end
 
             function CompactKeybind:Press(Bool)
-                -- Always use Toggle mode behavior
-                CompactKeybind.Toggled = not CompactKeybind.Toggled
+                -- Support both Toggle and Hold modes based on ModeSelected
+                if CompactKeybind.ModeSelected == "Hold" then
+                    CompactKeybind.Toggled = Bool
+                else
+                    -- Default to Toggle mode behavior
+                    CompactKeybind.Toggled = not CompactKeybind.Toggled
+                end
 
                 Library.Flags[CompactKeybind.Flag] = {
-                    Mode = "Toggle",
+                    Mode = CompactKeybind.ModeSelected or "Toggle",
                     Key = CompactKeybind.Key,
                     Toggled = CompactKeybind.Toggled
                 }
@@ -7024,11 +7053,23 @@ local Library do
                 local Key = Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode or Input.UserInputType
                 
                 if tostring(Key) == CompactKeybind.Key then
-                    CompactKeybind:Press()
+                    if CompactKeybind.ModeSelected == "Hold" then
+                        CompactKeybind:Press(true)
+                    else
+                        CompactKeybind:Press()
+                    end
                 end
             end)
 
-            -- No InputEnded handling needed for Toggle mode
+            Library:Connect(UserInputService.InputEnded, function(Input)
+                if CompactKeybind.Picking then return end
+                
+                local Key = Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode or Input.UserInputType
+                
+                if CompactKeybind.ModeSelected == "Hold" and tostring(Key) == CompactKeybind.Key then
+                    CompactKeybind:Press(false)
+                end
+            end)
 
             -- Set default key if provided
             if Data.Default then
