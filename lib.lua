@@ -68,12 +68,12 @@ local Library do
         Flags = { },
 
         Tween = {
-            Time = 0.3,
-            Style = Enum.EasingStyle.Quad,
+            Time = 0.2,  -- Reduced from 0.3 for snappier animations
+            Style = Enum.EasingStyle.Quart,
             Direction = Enum.EasingDirection.Out
         },
 
-        FadeSpeed = 0.2,
+        FadeSpeed = 0.15,  -- Reduced from 0.2 for faster fading
 
         Folders = {
             Directory = "vision",
@@ -251,15 +251,21 @@ local Library do
             local Item = Item or self.Item 
 
             local OldTransparency = Item[Property]
+            
+            -- Don't animate if already at target state
+            local targetTransparency = Visibility and OldTransparency or 1
+            if math.abs(Item[Property] - targetTransparency) < 0.01 then
+                return
+            end
+            
             Item[Property] = Visibility and 1 or OldTransparency
 
-            local NewTween = Tween:Create(Item, TweenInfo.new(Speed or Library.Tween.Time, Library.Tween.Style, Library.Tween.Direction), {
-                [Property] = Visibility and OldTransparency or 1
+            local NewTween = Tween:Create(Item, TweenInfo.new(Speed or Library.FadeSpeed, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                [Property] = targetTransparency
             }, true)
 
             Library:Connect(NewTween.Tween.Completed, function()
                 if not Visibility then 
-                    task.wait()
                     Item[Property] = OldTransparency
                 end
             end)
@@ -331,7 +337,8 @@ local Library do
             local Descendants = Item:GetDescendants()
             TableInsert(Descendants, Item)
 
-            local NewTween
+            local tweens = {}
+            local tweenCount = 0
 
             for Index, Value in Descendants do 
                 local TransparencyProperty = Tween:GetProperty(Value)
@@ -342,11 +349,33 @@ local Library do
 
                 if type(TransparencyProperty) == "table" then 
                     for _, Property in TransparencyProperty do 
-                        NewTween = Tween:FadeItem(Value, Property, not Visibility, Speed)
+                        local currentTransparency = Value[Property]
+                        local targetTransparency = Visibility and 1 or currentTransparency
+                        
+                        -- Skip if already at target
+                        if math.abs(currentTransparency - targetTransparency) > 0.01 then
+                            tweenCount = tweenCount + 1
+                            tweens[tweenCount] = Tween:FadeItem(Value, Property, not Visibility, Speed or Library.FadeSpeed)
+                        end
                     end
                 else
-                    NewTween = Tween:FadeItem(Value, TransparencyProperty, not Visibility, Speed)
+                    local currentTransparency = Value[TransparencyProperty]
+                    local targetTransparency = Visibility and 1 or currentTransparency
+                    
+                    -- Skip if already at target
+                    if math.abs(currentTransparency - targetTransparency) > 0.01 then
+                        tweenCount = tweenCount + 1
+                        tweens[tweenCount] = Tween:FadeItem(Value, TransparencyProperty, not Visibility, Speed or Library.FadeSpeed)
+                    end
                 end
+            end
+            
+            -- Hide item after fade out completes
+            if not Visibility and tweenCount > 0 then
+                task.spawn(function()
+                    task.wait(Speed or Library.FadeSpeed)
+                    Item.Visible = false
+                end)
             end
         end
 
@@ -2104,11 +2133,11 @@ local Library do
                     if Bool then 
                         NewKeyText:Tween(nil, {Position = UDim2New(0, 15, 0.5, 0), TextTransparency = 0})
                         NewKeyAccent:Tween(nil, {BackgroundTransparency = 0})
-                        NewKey:Tween(nil, {BackgroundTransparency = 0}) -- Show background when active
+                        -- Background stays the same - only dot appears/disappears
                     else
                         NewKeyText:Tween(nil, {Position = UDim2New(0, 0, 0.5, 0), TextTransparency = 0.3})
                         NewKeyAccent:Tween(nil, {BackgroundTransparency = 1})
-                        NewKey:Tween(nil, {BackgroundTransparency = 1}) -- Hide background when inactive
+                        -- Background stays the same - only dot disappears
                     end
                 end
 
@@ -7827,4 +7856,122 @@ local Library do
 end
 
 getgenv().Library = Library
+return Library
+
+    -- Optimized Page Switching to prevent freezing
+    Library.SmoothPageSwitch = function(self, NewPage, OldPage)
+        if OldPage then
+            -- Fade out old page asynchronously
+            task.spawn(function()
+                OldPage:FadeItem(false, Library.FadeSpeed)
+            end)
+        end
+        
+        if NewPage then
+            -- Small delay to prevent overlap, then fade in new page
+            task.spawn(function()
+                task.wait(Library.FadeSpeed * 0.3) -- Slight overlap for smoother transition
+                NewPage:FadeItem(true, Library.FadeSpeed)
+            end)
+        end
+    end
+
+    -- Smooth Section Collapse Animation
+    Library.SmoothSectionCollapse = function(self, Section, IsCollapsing)
+        if not Section or not Section.Instance then return end
+        
+        local Content = Section.Instance:FindFirstChild("Content")
+        if not Content then return end
+        
+        local TargetSize = IsCollapsing and UDim2New(1, 0, 0, 0) or UDim2New(1, 0, 0, Content.UIListLayout.AbsoluteContentSize.Y)
+        
+        -- Smooth size animation
+        local SizeTween = TweenService:Create(Content, 
+            TweenInfo.new(Library.Tween.Time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+            {Size = TargetSize}
+        )
+        
+        -- Smooth transparency animation for content
+        local TransparencyTween = TweenService:Create(Content,
+            TweenInfo.new(Library.FadeSpeed, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+            {BackgroundTransparency = IsCollapsing and 1 or 0}
+        )
+        
+        if IsCollapsing then
+            -- Fade out first, then collapse
+            TransparencyTween:Play()
+            TransparencyTween.Completed:Connect(function()
+                SizeTween:Play()
+            end)
+        else
+            -- Expand first, then fade in
+            SizeTween:Play()
+            SizeTween.Completed:Connect(function()
+                TransparencyTween:Play()
+            end)
+        end
+    end
+
+    -- Optimized Window Toggle to prevent flashing
+    Library.SmoothWindowToggle = function(self, Window, IsOpening)
+        if not Window or not Window.Instance then return end
+        
+        if IsOpening then
+            -- Make visible immediately but transparent
+            Window.Instance.Visible = true
+            Window.Instance.BackgroundTransparency = 1
+            
+            -- Smooth fade in
+            local FadeTween = TweenService:Create(Window.Instance,
+                TweenInfo.new(Library.FadeSpeed, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+                {BackgroundTransparency = 0}
+            )
+            FadeTween:Play()
+            
+            -- Smooth scale animation
+            Window.Instance.Size = UDim2New(0.8, 0, 0.8, 0)
+            local ScaleTween = TweenService:Create(Window.Instance,
+                TweenInfo.new(Library.Tween.Time, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+                {Size = UDim2New(1, 0, 1, 0)}
+            )
+            ScaleTween:Play()
+        else
+            -- Smooth fade out and scale down
+            local FadeTween = TweenService:Create(Window.Instance,
+                TweenInfo.new(Library.FadeSpeed, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+                {BackgroundTransparency = 1}
+            )
+            
+            local ScaleTween = TweenService:Create(Window.Instance,
+                TweenInfo.new(Library.Tween.Time, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+                {Size = UDim2New(0.8, 0, 0.8, 0)}
+            )
+            
+            FadeTween:Play()
+            ScaleTween:Play()
+            
+            -- Hide after animation completes
+            FadeTween.Completed:Connect(function()
+                Window.Instance.Visible = false
+            end)
+        end
+    end
+
+    -- Performance optimization: Batch UI updates
+    Library.BatchUIUpdates = function(self, Updates)
+        -- Disable automatic UI updates temporarily
+        local wasEnabled = game:GetService("RunService").Heartbeat
+        
+        -- Apply all updates in a single frame
+        task.spawn(function()
+            for _, Update in ipairs(Updates) do
+                if type(Update) == "function" then
+                    Update()
+                end
+            end
+        end)
+    end
+
+end
+
 return Library
