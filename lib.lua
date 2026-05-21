@@ -2071,7 +2071,13 @@ local Library do
                 })  NewKeyText:AddToTheme({TextColor3 = "Text"})
 
                 function NewKey:Set(Name, Key)
-                    NewKeyText.Instance.Text = Name .. " ["..Key.."]"
+                    -- Only show keybind if it has a valid key
+                    if Key and Key ~= "" and Key ~= "None" then
+                        NewKeyText.Instance.Text = Name .. " [" .. Key .. "]"
+                        NewKey.Instance.Visible = true
+                    else
+                        NewKey.Instance.Visible = false
+                    end
                 end
 
                 function NewKey:SetStatus(Bool)
@@ -4380,7 +4386,7 @@ local Library do
                 Side = Data.Side or Data.side or 1,
 
                 Items = { },
-                IsActive = false, -- Start collapsed by default
+                IsActive = Data.DefaultOpen or false, -- Allow overriding default state
                 Elements = { }
             }
 
@@ -4498,20 +4504,20 @@ local Library do
                     Size = UDim2New(0, 26, 0, 16),
                     ZIndex = 2,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = Library.Theme.Element -- Start with Element color for "off" state
-                })  Items["Toggle"]:AddToTheme({BackgroundColor3 = "Element"}) -- Set theme to Element for "off" state
+                    BackgroundColor3 = Section.IsActive and Library.Theme.Text or Library.Theme.Element -- Set based on IsActive
+                })  Items["Toggle"]:AddToTheme({BackgroundColor3 = Section.IsActive and "Text" or "Element"}) -- Set theme based on IsActive
                 
                 Items["Circle"] = Instances:Create("Frame", {
                     Parent = Items["Toggle"].Instance,
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
-                    AnchorPoint = Vector2New(0, 0.5), -- Start in "off" position
-                    Position = UDim2New(0, 4, 0.5, 0), -- Start in "off" position
+                    AnchorPoint = Section.IsActive and Vector2New(1, 0.5) or Vector2New(0, 0.5), -- Set based on IsActive
+                    Position = Section.IsActive and UDim2New(1, -4, 0.5, 0) or UDim2New(0, 4, 0.5, 0), -- Set based on IsActive
                     Size = UDim2New(0, 8, 0, 8),
                     ZIndex = 2,
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255),
-                    BackgroundTransparency = 0.6 -- Start dimmed for "off" state
+                    BackgroundTransparency = Section.IsActive and 0 or 0.6 -- Set based on IsActive
                 })  Items["Circle"]:AddToTheme({BackgroundColor3 = "Text"})
                 
                 Instances:Create("UICorner", {
@@ -4531,7 +4537,7 @@ local Library do
                     Name = "\0",
                     Rotation = -115,
                     Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(143, 143, 143))},
-                    Enabled = false -- Start disabled for "off" state
+                    Enabled = Section.IsActive -- Set based on IsActive
                 })  Items["Gradient"]:AddToTheme({Color = function()
                     return RGBSequence{RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.AccentGradient)}
                 end})
@@ -4666,7 +4672,7 @@ local Library do
                     ZIndex = 2,
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(24, 22, 25),
-                    Visible = false -- Start hidden since sections start collapsed
+                    Visible = Section.IsActive -- Set visibility based on IsActive
                 })  Items["Background"]:AddToTheme({BackgroundColor3 = "Section Background"})
                 
                 Items["Content"] = Instances:Create("Frame", {
@@ -4679,7 +4685,7 @@ local Library do
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundColor3 = FromRGB(255, 255, 255),
-                    Visible = false -- Start hidden since sections start collapsed
+                    Visible = Section.IsActive -- Set visibility based on IsActive
                 })
                 
                 Instances:Create("UIListLayout", {
@@ -4722,7 +4728,12 @@ local Library do
                 Section.IsActive = not Section.IsActive
 
                 if not Section.IsActive then 
-                    -- Hide content when section is collapsed
+                    -- Smooth collapse animation
+                    Items["Background"]:Tween(TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2New(1, -2, 0, 0)})
+                    Items["Content"]:FadeItem(false, 0.2)
+                    
+                    -- Wait for animation then hide
+                    task.wait(0.3)
                     Items["Content"].Instance.Visible = false
                     Items["Background"].Instance.Visible = false
                     
@@ -4734,6 +4745,10 @@ local Library do
                     -- Show content when section is expanded
                     Items["Content"].Instance.Visible = true
                     Items["Background"].Instance.Visible = true
+                    
+                    -- Smooth expand animation
+                    Items["Background"]:Tween(TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2New(1, -2, 1, -56)})
+                    Items["Content"]:FadeItem(true, 0.2)
 
                     Items["Gradient"].Instance.Enabled = true
                     Items["Toggle"]:ChangeItemTheme({BackgroundColor3 = "Text"})
@@ -7514,7 +7529,7 @@ local Library do
     Library.CreateSettingsPage = function(self, Window, KeybindList, ModeratorList)
         local Page = Window:Page({Name = "Settings", Icon = "8622237899"})
 
-        local ConfigsSection = Page:Section({Name = "Configs", Side = 1}) do 
+        local ConfigsSection = Page:Section({Name = "Configs", Side = 1, DefaultOpen = true}) do 
             local ConfigName
             local ConfigSelected
 
@@ -7670,7 +7685,7 @@ local Library do
             Library:RefreshConfigsList(ConfigsDropdown)
         end
 
-        local MiscSection = Page:Section({Name = "Misc", Side = 2}) do
+        local MiscSection = Page:Section({Name = "Misc", Side = 2, DefaultOpen = true}) do
             MiscSection:Keybind({
                 Name = "Menu Bind",
                 Flag = "MenuBind",
