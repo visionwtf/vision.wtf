@@ -7855,9 +7855,6 @@ local Library do
     end
 end
 
-getgenv().Library = Library
-return Library
-
     -- Optimized Page Switching to prevent freezing
     Library.SmoothPageSwitch = function(self, NewPage, OldPage)
         if OldPage then
@@ -7868,9 +7865,8 @@ return Library
         end
         
         if NewPage then
-            -- Small delay to prevent overlap, then fade in new page
+            -- Fade in new page asynchronously
             task.spawn(function()
-                task.wait(Library.FadeSpeed * 0.3) -- Slight overlap for smoother transition
                 NewPage:FadeItem(true, Library.FadeSpeed)
             end)
         end
@@ -7878,65 +7874,47 @@ return Library
 
     -- Smooth Section Collapse Animation
     Library.SmoothSectionCollapse = function(self, Section, IsCollapsing)
-        if not Section or not Section.Instance then return end
+        local TargetSize = IsCollapsing and UDim2New(1, 0, 0, 30) or UDim2New(1, 0, 1, 0)
         
-        local Content = Section.Instance:FindFirstChild("Content")
-        if not Content then return end
-        
-        local TargetSize = IsCollapsing and UDim2New(1, 0, 0, 0) or UDim2New(1, 0, 0, Content.UIListLayout.AbsoluteContentSize.Y)
-        
-        -- Smooth size animation
-        local SizeTween = TweenService:Create(Content, 
+        local SizeTween = TweenService:Create(Section.Instance,
             TweenInfo.new(Library.Tween.Time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
             {Size = TargetSize}
         )
         
         -- Smooth transparency animation for content
-        local TransparencyTween = TweenService:Create(Content,
+        local FadeTween = TweenService:Create(Section.Content,
             TweenInfo.new(Library.FadeSpeed, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
             {BackgroundTransparency = IsCollapsing and 1 or 0}
         )
         
         if IsCollapsing then
-            -- Fade out first, then collapse
-            TransparencyTween:Play()
-            TransparencyTween.Completed:Connect(function()
-                SizeTween:Play()
-            end)
-        else
-            -- Expand first, then fade in
+            FadeTween:Play()
+            task.wait(Library.FadeSpeed)
             SizeTween:Play()
-            SizeTween.Completed:Connect(function()
-                TransparencyTween:Play()
-            end)
+        else
+            SizeTween:Play()
+            task.wait(Library.Tween.Time)
+            FadeTween:Play()
         end
     end
 
-    -- Optimized Window Toggle to prevent flashing
-    Library.SmoothWindowToggle = function(self, Window, IsOpening)
-        if not Window or not Window.Instance then return end
-        
-        if IsOpening then
-            -- Make visible immediately but transparent
+    -- Smooth Window Toggle Animation
+    Library.SmoothWindowToggle = function(self, Window, IsVisible)
+        if IsVisible then
             Window.Instance.Visible = true
-            Window.Instance.BackgroundTransparency = 1
             
-            -- Smooth fade in
             local FadeTween = TweenService:Create(Window.Instance,
                 TweenInfo.new(Library.FadeSpeed, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
                 {BackgroundTransparency = 0}
             )
             FadeTween:Play()
             
-            -- Smooth scale animation
-            Window.Instance.Size = UDim2New(0.8, 0, 0.8, 0)
             local ScaleTween = TweenService:Create(Window.Instance,
                 TweenInfo.new(Library.Tween.Time, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
                 {Size = UDim2New(1, 0, 1, 0)}
             )
             ScaleTween:Play()
         else
-            -- Smooth fade out and scale down
             local FadeTween = TweenService:Create(Window.Instance,
                 TweenInfo.new(Library.FadeSpeed, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
                 {BackgroundTransparency = 1}
@@ -7950,28 +7928,11 @@ return Library
             FadeTween:Play()
             ScaleTween:Play()
             
-            -- Hide after animation completes
-            FadeTween.Completed:Connect(function()
+            ScaleTween.Completed:Connect(function()
                 Window.Instance.Visible = false
             end)
         end
     end
 
-    -- Performance optimization: Batch UI updates
-    Library.BatchUIUpdates = function(self, Updates)
-        -- Disable automatic UI updates temporarily
-        local wasEnabled = game:GetService("RunService").Heartbeat
-        
-        -- Apply all updates in a single frame
-        task.spawn(function()
-            for _, Update in ipairs(Updates) do
-                if type(Update) == "function" then
-                    Update()
-                end
-            end
-        end)
-    end
-
-end
-
+getgenv().Library = Library
 return Library
