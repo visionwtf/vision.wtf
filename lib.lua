@@ -2,7 +2,6 @@
 -- Join for high quality UI Commissions
 -- https://discord.gg/VhvTd5HV8d
 -- @joestar._3
--- using for vision.wtf bc its leaked
 
 local Library do 
     local Workspace = game:GetService("Workspace")
