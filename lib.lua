@@ -7978,5 +7978,7 @@ end
         end
     end
 
+end -- Close the 'do' block from line 6
+
 getgenv().Library = Library
 return Library
