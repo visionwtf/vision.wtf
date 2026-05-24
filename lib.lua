@@ -264,11 +264,14 @@ local Library do
                 [Property] = targetTransparency
             }, true)
 
-            Library:Connect(NewTween.Tween.Completed, function()
-                if not Visibility then 
-                    Item[Property] = OldTransparency
-                end
-            end)
+            -- Check if NewTween exists before accessing its properties
+            if NewTween and NewTween.Tween then
+                Library:Connect(NewTween.Tween.Completed, function()
+                    if not Visibility then 
+                        Item[Property] = OldTransparency
+                    end
+                end)
+            end
 
             return NewTween
         end
@@ -1662,12 +1665,20 @@ local Library do
                     end
                 end
                 
-                NewTween.Tween.Completed:Connect(function()
+                -- Check if NewTween exists before accessing its properties
+                if NewTween and NewTween.Tween then
+                    NewTween.Tween.Completed:Connect(function()
+                        Debounce = false 
+                        Items["ColorpickerWindow"].Instance.Visible = Colorpicker.IsOpen
+                        task.wait(0.2)
+                        Items["ColorpickerWindow"].Instance.Parent = not Colorpicker.IsOpen and Library.UnusedHolder.Instance or Library.Holder.Instance
+                    end)
+                else
+                    -- Fallback if no tween was created
                     Debounce = false 
                     Items["ColorpickerWindow"].Instance.Visible = Colorpicker.IsOpen
-                    task.wait(0.2)
                     Items["ColorpickerWindow"].Instance.Parent = not Colorpicker.IsOpen and Library.UnusedHolder.Instance or Library.Holder.Instance
-                end)
+                end
             end
 
             function Colorpicker:Set(Color, Alpha)
@@ -3360,12 +3371,20 @@ local Library do
                             end
                         end
                         
-                        NewTween.Tween.Completed:Connect(function()
+                        -- Check if NewTween exists before accessing its properties
+                        if NewTween and NewTween.Tween then
+                            NewTween.Tween.Completed:Connect(function()
+                                Debounce = false 
+                                SettingsItems["Settings"].Instance.Visible = Settings.IsOpen
+                                task.wait(0.2)
+                                SettingsItems["Settings"].Instance.Parent = not Settings.IsOpen and Library.UnusedHolder.Instance or Library.Holder.Instance
+                            end)
+                        else
+                            -- Fallback if no tween was created
                             Debounce = false 
                             SettingsItems["Settings"].Instance.Visible = Settings.IsOpen
-                            task.wait(0.2)
                             SettingsItems["Settings"].Instance.Parent = not Settings.IsOpen and Library.UnusedHolder.Instance or Library.Holder.Instance
-                        end)
+                        end
                     end
     
                     SettingsItems["CloseButton"]:Connect("MouseButton1Down", function()
@@ -3482,10 +3501,17 @@ local Library do
                     end
                 end
                 
-                NewTween.Tween.Completed:Connect(function()
+                -- Check if NewTween exists before accessing its properties
+                if NewTween and NewTween.Tween then
+                    NewTween.Tween.Completed:Connect(function()
+                        Debounce = false 
+                        Items["MainFrame"].Instance.Visible = Window.IsOpen
+                    end)
+                else
+                    -- Fallback if no tween was created
                     Debounce = false 
                     Items["MainFrame"].Instance.Visible = Window.IsOpen
-                end)
+                end
             end
 
             if IsMobile then 
@@ -3871,12 +3897,14 @@ local Library do
                     end
                 end
 
-                Library:Connect(NewTween.Tween.Completed, function()
-                    Debounce = false
+                -- Check if NewTween exists before accessing its properties
+                if NewTween and NewTween.Tween then
+                    Library:Connect(NewTween.Tween.Completed, function()
+                        Debounce = false
 
-                    if not Page.Active then 
-                        for Index, Value in Page.Sections do 
-                            task.spawn(function()
+                        if not Page.Active then 
+                            for Index, Value in Page.Sections do 
+                                task.spawn(function()
                                 Value:TweenElements(false, true)
                             end)   
                         end
@@ -5255,12 +5283,20 @@ local Library do
                         end
                     end
                     
-                    NewTween.Tween.Completed:Connect(function()
+                    -- Check if NewTween exists before accessing its properties
+                    if NewTween and NewTween.Tween then
+                        NewTween.Tween.Completed:Connect(function()
+                            Debounce = false 
+                            SettingsItem["Settings"].Instance.Visible = Settings.IsOpen
+                            task.wait(0.2)
+                            SettingsItem["Settings"].Instance.Parent = not Settings.IsOpen and Library.UnusedHolder.Instance or Library.Holder.Instance
+                        end)
+                    else
+                        -- Fallback if no tween was created
                         Debounce = false 
                         SettingsItem["Settings"].Instance.Visible = Settings.IsOpen
-                        task.wait(0.2)
                         SettingsItem["Settings"].Instance.Parent = not Settings.IsOpen and Library.UnusedHolder.Instance or Library.Holder.Instance
-                    end)
+                    end
                 end
 
                 SettingsItem["Button"]:Connect("MouseButton1Down", function()
@@ -6112,12 +6148,20 @@ local Library do
                     end
                 end
                 
-                NewTween.Tween.Completed:Connect(function()
+                -- Check if NewTween exists before accessing its properties
+                if NewTween and NewTween.Tween then
+                    NewTween.Tween.Completed:Connect(function()
+                        Debounce = false 
+                        Items["OptionHolder"].Instance.Visible = Dropdown.IsOpen
+                        task.wait(0.2)
+                        Items["OptionHolder"].Instance.Parent = not Dropdown.IsOpen and Library.UnusedHolder.Instance or Library.Holder.Instance
+                    end)
+                else
+                    -- Fallback if no tween was created
                     Debounce = false 
                     Items["OptionHolder"].Instance.Visible = Dropdown.IsOpen
-                    task.wait(0.2)
                     Items["OptionHolder"].Instance.Parent = not Dropdown.IsOpen and Library.UnusedHolder.Instance or Library.Holder.Instance
-                end)
+                end
             end
 
             function Dropdown:Set(Option)
