@@ -3399,62 +3399,8 @@ local Library do
                 -- Ensure Settings always has the Label method by setting metatable outside conditional
                 setmetatable(Settings, {__index = Library.Sections})
 
-                Settings:Label("First gradient color"):Colorpicker({
-                    Flag = "AccentColor",
-                    Default = Library.Theme.Accent,
-                    Callback = function(Color)
-                        Library.Theme.Accent = Color
-                        Library:ChangeTheme("Accent", Color)
-                    end
-                })
-
-                Settings:Label("Second gradient color"):Colorpicker({
-                    Flag = "AccentGradientColor",
-                    Default = Library.Theme.AccentGradient,
-                    Callback = function(Color)
-                        Library.Theme.AccentGradient = Color
-                        Library:ChangeTheme("AccentGradient", Color)
-                    end
-                })
-
-                Settings:Dropdown({
-                    Name = "Font weight",
-                    Flag = "FontStyle",
-                    Default = "SemiBold",
-                    Items = {"Light", "Regular", "SemiBold"},
-                    Callback = function(Value)
-                        local FontData = Library.Fonts[Value]
-
-                        if FontData then
-                            Library.Font = FontData
-                            Library:UpdateText()
-                        end
-                    end
-                })
-
-                Settings:Slider({
-                    Name = "Background Transparency",
-                    Default = 0.2,
-                    Decimals = 0.01,
-                    Max = 1,
-                    Min = 0,
-                    Suffix = "%",
-                    Flag = "BackgroundTransparency",
-                    Callback = function(Value)
-                        Window:SetTransparency(Value)
-                    end
-                })
-
-                Settings:Keybind({
-                    Name = "Menu Keybind",
-                    Flag = "MenuBind",
-                    Default = nil,
-                    Callback = function(Toggled)
-                        if Toggled then
-                            Window:SetOpen(not Window.IsOpen)
-                        end
-                    end
-                })
+                -- Configure Settings after all Library.Sections methods are defined
+                Library:ConfigureSettings(Settings, Window)
 
                 Window.Items = Items
             end
@@ -7705,6 +7651,66 @@ local Library do
             Dropdown.Section.Elements[#Dropdown.Section.Elements+1] = Dropdown
             return Dropdown
         end
+    end
+
+    -- Configure Settings after all Library.Sections methods are defined
+    Library.ConfigureSettings = function(self, Settings, Window)
+        Settings:Label("First gradient color"):Colorpicker({
+            Flag = "AccentColor",
+            Default = Library.Theme.Accent,
+            Callback = function(Color)
+                Library.Theme.Accent = Color
+                Library:ChangeTheme("Accent", Color)
+            end
+        })
+
+        Settings:Label("Second gradient color"):Colorpicker({
+            Flag = "AccentGradientColor",
+            Default = Library.Theme.AccentGradient,
+            Callback = function(Color)
+                Library.Theme.AccentGradient = Color
+                Library:ChangeTheme("AccentGradient", Color)
+            end
+        })
+
+        Settings:Dropdown({
+            Name = "Font weight",
+            Flag = "FontStyle",
+            Default = "SemiBold",
+            Items = {"Light", "Regular", "SemiBold"},
+            Callback = function(Value)
+                local FontData = Library.Fonts[Value]
+
+                if FontData then
+                    Library.Font = FontData
+                    Library:UpdateText()
+                end
+            end
+        })
+
+        Settings:Slider({
+            Name = "Background Transparency",
+            Default = 0.2,
+            Decimals = 0.01,
+            Max = 1,
+            Min = 0,
+            Suffix = "%",
+            Flag = "BackgroundTransparency",
+            Callback = function(Value)
+                Window:SetTransparency(Value)
+            end
+        })
+
+        Settings:Keybind({
+            Name = "Menu Keybind",
+            Flag = "MenuBind",
+            Default = nil,
+            Callback = function(Toggled)
+                if Toggled then
+                    Window:SetOpen(not Window.IsOpen)
+                end
+            end
+        })
     end
 
     Library.CreateSettingsPage = function(self, Window, KeybindList, ModeratorList)
