@@ -3656,24 +3656,184 @@ local Library do
         end
 
         Library.Page = function(self, Data)
-            print("=== ENTERING Library.Page function ===")
-            print("Step 1: Function entered")
-            
             Data = Data or { }
-            print("Step 2: Data initialized")
-            
-            print("Step 3: About to create Page object")
-            
+
             local Page = {
                 Window = self,
-                Name = "TestPage",
-                Items = { }
+
+                Name = Data.Name or Data.name or "Page",
+                Icon = Data.Icon or Data.icon or "100050851789190",
+                Columns = Data.Columns or Data.columns or 2,
+
+                Items = { },
+                ColumnsData = { },
+                Sections = { },
+                Active = false
             }
-            
-            print("Step 4: Basic Page object created")
-            print("Step 5: Returning basic Page")
-            
-            return Page
+
+            local Items = { } do
+                Items["Inactive"] = Instances:Create("TextButton", {
+                    Parent = Page.Window.Items["LeftTabs"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(0, 0, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = "",
+                    AutoButtonColor = false,
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    Size = UDim2New(0, 200, 0, 40),
+                    ZIndex = 2,
+                    TextSize = 14,
+                    BackgroundColor3 = FromRGB(124, 163, 255)
+                })  Items["Inactive"]:AddToTheme({BackgroundColor3 = "Accent"})
+                
+                Instances:Create("UICorner", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 5)
+                })
+                
+                Items.Gradient = Instances:Create("UIGradient", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    Transparency = NumSequence{NumSequenceKeypoint(0, 0.41874998807907104), NumSequenceKeypoint(0.445, 0.78125), NumSequenceKeypoint(0.751, 0.9375), NumSequenceKeypoint(1, 1)}
+                })
+
+                Items["Icon"] = Instances:Create("ImageLabel", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2New(0, 0.5),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BorderSizePixel = 0,
+                    Position = UDim2New(0, 15, 0.5, 0),
+                    Size = UDim2New(0, 16, 0, 16),
+                    ZIndex = 3,
+                    Image = "rbxassetid://"..Page.Icon,
+                    BackgroundTransparency = 1,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })  --Items["Icon"]:AddToTheme({ImageColor3 = "Accent"})
+
+                Instances:Create("UIGradient", {
+                    Parent = Items["Icon"].Instance,
+                    Name = "\0",
+                    Rotation = -115
+                }):AddToTheme({Color = function()
+                    return RGBSequence{RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.AccentGradient)}
+                end})
+                
+
+                Items["Text"] = Instances:Create("TextLabel", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    Text = Page.Name,
+                    TextColor3 = FromRGB(255, 255, 255),
+                    TextSize = 14,
+                    AnchorPoint = Vector2New(0, 0.5),
+                    BackgroundColor3 = FromRGB(255, 255, 255),
+                    BackgroundTransparency = 1,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BorderSizePixel = 0,
+                    Position = UDim2New(0, 40, 0.5, 0),
+                    Size = UDim2New(1, -40, 1, 0),
+                    ZIndex = 3,
+                    TextXAlignment = Enum.TextXAlignment.Left
+                })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+
+                Items["Page"] = Instances:Create("ScrollingFrame", {
+                    Parent = Page.Window.Items["RightTabs"].Instance,
+                    Name = "\0",
+                    Active = true,
+                    BackgroundColor3 = FromRGB(255, 255, 255),
+                    BackgroundTransparency = 1,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BorderSizePixel = 0,
+                    Position = UDim2New(0, 0, 0, 0),
+                    Size = UDim2New(1, 0, 1, 0),
+                    ZIndex = 2,
+                    BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png",
+                    CanvasSize = UDim2New(0, 0, 0, 0),
+                    MidImage = "rbxasset://textures/ui/Scroll/scroll-middle.png",
+                    ScrollBarThickness = 0,
+                    TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png",
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y
+                })
+
+                Instances:Create("UIPadding", {
+                    Parent = Items["Page"].Instance,
+                    Name = "\0",
+                    PaddingBottom = UDimNew(0, 15),
+                    PaddingLeft = UDimNew(0, 15),
+                    PaddingRight = UDimNew(0, 15),
+                    PaddingTop = UDimNew(0, 15)
+                })
+
+                for Index = 1, Page.Columns do 
+                    Page.ColumnsData[Index] = Instances:Create("Frame", {
+                        Parent = Items["Page"].Instance,
+                        Name = "\0",
+                        BackgroundTransparency = 1,
+                        Size = UDim2New(1 / Page.Columns, -7.5, 0, 0),
+                        Position = UDim2New((Index - 1) / Page.Columns, (Index - 1) * 7.5, 0, 0),
+                        AutomaticSize = Enum.AutomaticSize.Y
+                    })
+
+                    Instances:Create("UIListLayout", {
+                        Parent = Page.ColumnsData[Index].Instance,
+                        Name = "\0",
+                        Padding = UDimNew(0, 15),
+                        SortOrder = Enum.SortOrder.LayoutOrder
+                    })
+                end
+            end
+
+            Page.Items = Items
+
+            function Page:SetActive(Bool)
+                Page.Active = Bool
+
+                if Page.Active then 
+                    Items["Inactive"].Instance.BackgroundTransparency = 0
+                    Items["Page"].Instance.Visible = true
+                    Items["Page"]:Tween(TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0)})
+
+                    for Index, Value in Page.Sections do 
+                        task.spawn(function()
+                            Value:TweenElements(true)
+                        end)
+                    end
+                else
+                    Items["Inactive"].Instance.BackgroundTransparency = 1
+                    Items["Page"]:Tween(TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, -Items["Page"].Instance.AbsoluteSize.Y)})
+
+                    task.wait(0.5)
+
+                    if not Page.Active then 
+                        for Index, Value in Page.Sections do 
+                            task.spawn(function()
+                            Value:TweenElements(false, true)
+                            end)
+                        end
+
+                        Items["Page"].Instance.Visible = false
+                    end
+                end
+            end
+
+            Items["Inactive"]:Connect("MouseButton1Down", function()
+                for Index, Value in Page.Window.Pages do 
+                    if Value ~= Page then 
+                        Value:SetActive(false)
+                    end
+                end
+
+                Page:SetActive(true)
+            end)
+
+            TableInsert(Page.Window.Pages, Page)
+            return setmetatable(Page, {__index = Library.Pages})
+        end
 
             -- Check if we can proceed with UI creation
             if not (self and self.Items and self.Items.LeftTabs and self.Items.LeftTabs.Instance) then
