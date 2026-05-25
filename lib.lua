@@ -3835,26 +3835,28 @@ local Library do
             return setmetatable(Page, {__index = Library.Pages})
         end
 
-            -- Check if we can proceed with UI creation
-            if not (self and self.Items and self.Items.LeftTabs and self.Items.LeftTabs.Instance) then
-                print("ERROR: Window structure is incomplete for Page creation")
-                print("self:", self ~= nil)
-                print("self.Items:", self and self.Items ~= nil)
-                print("self.Items.LeftTabs:", self and self.Items and self.Items.LeftTabs ~= nil)
-                return nil
+        Library.Pages.GlobalChat = function(self, Side)
+            local GlobalChat = { }
+            Library.GlobalChatt = GlobalChat
+
+            local Items = { } do 
+                Items["GlobalChat"] = Instances:Create("Frame", {
+                    Parent = self.ColumnsData[Side].Instance,
+                    Name = "\0",
+                    BackgroundTransparency = 0.30000001192092896,
+                    Position = UDim2New(0,0,0,0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(1, 0, 1, 0),
+                    ZIndex = 2,
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })  Items["GlobalChat"]:AddToTheme({BackgroundColor3 = "Section Background"})
             end
 
-            print("=== Starting UI creation for Page ===")
-            local Items = { } do
-                print("Creating Inactive button...")
-                Items["Inactive"] = Instances:Create("TextButton", {
-                    Parent = Page.Window.Items["LeftTabs"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = FromRGB(0, 0, 0),
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Text = "",
-                    AutoButtonColor = false,
+            return GlobalChat
+        end
+
+        Library.Pages.Section = function(self, Data)
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
                     Size = UDim2New(0, 200, 0, 40),
