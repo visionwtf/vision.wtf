@@ -3694,7 +3694,9 @@ local Library do
                 return nil
             end
 
+            print("=== Starting UI creation for Page ===")
             local Items = { } do
+                print("Creating Inactive button...")
                 Items["Inactive"] = Instances:Create("TextButton", {
                     Parent = Page.Window.Items["LeftTabs"].Instance,
                     Name = "\0",
@@ -3710,6 +3712,8 @@ local Library do
                     TextSize = 14,
                     BackgroundColor3 = FromRGB(124, 163, 255)
                 })  Items["Inactive"]:AddToTheme({BackgroundColor3 = "Accent"})
+                
+                print("=== Created Inactive button successfully ===")
                 
                 Instances:Create("UICorner", {
                     Parent = Items["Inactive"].Instance,
@@ -3903,9 +3907,13 @@ local Library do
                 Page:Turn(true)
             end
             
+            print("=== About to add Page to Window.Pages ===")
             TableInsert(Page.Window.Pages, Page)
             print("=== Library.Page function completing successfully ===")
-            return setmetatable(Page, {__index = Library.Pages})
+            print("=== Returning Page with metatable ===")
+            local result = setmetatable(Page, {__index = Library.Pages})
+            print("=== Page metatable set, result:", result ~= nil, "===")
+            return result
         end
 
         Library.Pages.GlobalChat = function(self, Side)
