@@ -7655,10 +7655,7 @@ local Library do
 
     -- Configure Settings after all Library.Sections methods are defined
     Library.ConfigureSettings = function(self, Settings, Window)
-        -- Try calling Library.Sections.Label directly first to test
-        if Library.Sections and Library.Sections.Label then
-            print("Library.Sections.Label exists, calling directly...")
-            Library.Sections.Label(Settings, "First gradient color"):Colorpicker({
+        Settings:Label("First gradient color"):Colorpicker({
             Flag = "AccentColor",
             Default = Library.Theme.Accent,
             Callback = function(Color)
