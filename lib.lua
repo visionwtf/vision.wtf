@@ -3657,33 +3657,50 @@ local Library do
 
         Library.Page = function(self, Data)
             print("=== ENTERING Library.Page function ===")
-            Data = Data or { }
+            
+            local success, result = pcall(function()
+                Data = Data or { }
 
-            -- Debug: Check if Window has required structure
-            print("Library.Page called with self:", self ~= nil)
-            print("self type:", type(self))
-            print("self.Items exists:", self and self.Items ~= nil)
-            if self and self.Items then
-                print("self.Items type:", type(self.Items))
-                print("self.Items.LeftTabs exists:", self.Items.LeftTabs ~= nil)
-                if self.Items.LeftTabs then
-                    print("self.Items.LeftTabs type:", type(self.Items.LeftTabs))
-                    print("self.Items.LeftTabs.Instance exists:", self.Items.LeftTabs.Instance ~= nil)
+                -- Debug: Check if Window has required structure
+                print("Library.Page called with self:", self ~= nil)
+                print("self type:", type(self))
+                print("self.Items exists:", self and self.Items ~= nil)
+                if self and self.Items then
+                    print("self.Items type:", type(self.Items))
+                    print("self.Items.LeftTabs exists:", self.Items.LeftTabs ~= nil)
+                    if self.Items.LeftTabs then
+                        print("self.Items.LeftTabs type:", type(self.Items.LeftTabs))
+                        print("self.Items.LeftTabs.Instance exists:", self.Items.LeftTabs.Instance ~= nil)
+                    end
                 end
+
+                local Page = {
+                    Window = self,
+
+                    Name = Data.Name or Data.name or "Page",
+                    Icon = Data.Icon or Data.icon or "100050851789190",
+                    Columns = Data.Columns or Data.columns or 2,
+
+                    Items = { },
+                    ColumnsData = { },
+                    Sections = { },
+                    Active = false
+                }
+
+                print("=== Page object created successfully ===")
+                print("Page.Name:", Page.Name)
+                print("Page.Icon:", Page.Icon)
+                
+                return Page
+            end)
+            
+            if not success then
+                print("ERROR in Library.Page:", result)
+                return nil
             end
-
-            local Page = {
-                Window = self,
-
-                Name = Data.Name or Data.name or "Page",
-                Icon = Data.Icon or Data.icon or "100050851789190",
-                Columns = Data.Columns or Data.columns or 2,
-
-                Items = { },
-                ColumnsData = { },
-                Sections = { },
-                Active = false
-            }
+            
+            print("=== Page creation completed, continuing with UI ===")
+            local Page = result
 
             -- Check if we can proceed with UI creation
             if not (self and self.Items and self.Items.LeftTabs and self.Items.LeftTabs.Instance) then
