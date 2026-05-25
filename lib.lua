@@ -213,7 +213,13 @@ local Library do
 
         Tween.Create = function(self, Item, Info, Goal, IsRawItem)
             Item = IsRawItem and Item or Item.Instance
-            Info = Info or TweenInfo.new(Library.Tween.Time, Library.Tween.Style, Library.Tween.Direction)
+            
+            -- Fallback values if Library.Tween is not yet initialized
+            local tweenTime = (Library and Library.Tween and Library.Tween.Time) or 0.2
+            local tweenStyle = (Library and Library.Tween and Library.Tween.Style) or Enum.EasingStyle.Quart
+            local tweenDirection = (Library and Library.Tween and Library.Tween.Direction) or Enum.EasingDirection.Out
+            
+            Info = Info or TweenInfo.new(tweenTime, tweenStyle, tweenDirection)
 
             local NewTween = {
                 Tween = TweenService:Create(Item, Info, Goal),
@@ -260,7 +266,7 @@ local Library do
             
             Item[Property] = Visibility and 1 or OldTransparency
 
-            local NewTween = Tween:Create(Item, TweenInfo.new(Speed or Library.FadeSpeed, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+            local NewTween = Tween:Create(Item, TweenInfo.new(Speed or (Library and Library.FadeSpeed) or 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
                 [Property] = targetTransparency
             }, true)
 
