@@ -3657,50 +3657,23 @@ local Library do
 
         Library.Page = function(self, Data)
             print("=== ENTERING Library.Page function ===")
+            print("Step 1: Function entered")
             
-            local success, result = pcall(function()
-                Data = Data or { }
-
-                -- Debug: Check if Window has required structure
-                print("Library.Page called with self:", self ~= nil)
-                print("self type:", type(self))
-                print("self.Items exists:", self and self.Items ~= nil)
-                if self and self.Items then
-                    print("self.Items type:", type(self.Items))
-                    print("self.Items.LeftTabs exists:", self.Items.LeftTabs ~= nil)
-                    if self.Items.LeftTabs then
-                        print("self.Items.LeftTabs type:", type(self.Items.LeftTabs))
-                        print("self.Items.LeftTabs.Instance exists:", self.Items.LeftTabs.Instance ~= nil)
-                    end
-                end
-
-                local Page = {
-                    Window = self,
-
-                    Name = Data.Name or Data.name or "Page",
-                    Icon = Data.Icon or Data.icon or "100050851789190",
-                    Columns = Data.Columns or Data.columns or 2,
-
-                    Items = { },
-                    ColumnsData = { },
-                    Sections = { },
-                    Active = false
-                }
-
-                print("=== Page object created successfully ===")
-                print("Page.Name:", Page.Name)
-                print("Page.Icon:", Page.Icon)
-                
-                return Page
-            end)
+            Data = Data or { }
+            print("Step 2: Data initialized")
             
-            if not success then
-                print("ERROR in Library.Page:", result)
-                return nil
-            end
+            print("Step 3: About to create Page object")
             
-            print("=== Page creation completed, continuing with UI ===")
-            local Page = result
+            local Page = {
+                Window = self,
+                Name = "TestPage",
+                Items = { }
+            }
+            
+            print("Step 4: Basic Page object created")
+            print("Step 5: Returning basic Page")
+            
+            return Page
 
             -- Check if we can proceed with UI creation
             if not (self and self.Items and self.Items.LeftTabs and self.Items.LeftTabs.Instance) then
