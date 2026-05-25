@@ -3399,8 +3399,8 @@ local Library do
                 -- Ensure Settings always has the Label method by setting metatable outside conditional
                 setmetatable(Settings, {__index = Library.Sections})
 
-                -- Configure Settings after all Library.Sections methods are defined
-                Library:ConfigureSettings(Settings, Window)
+                -- Store Settings for later configuration
+                Window.Settings = Settings
 
                 Window.Items = Items
             end
@@ -7655,7 +7655,10 @@ local Library do
 
     -- Configure Settings after all Library.Sections methods are defined
     Library.ConfigureSettings = function(self, Settings, Window)
-        Settings:Label("First gradient color"):Colorpicker({
+        -- Try calling Library.Sections.Label directly first to test
+        if Library.Sections and Library.Sections.Label then
+            print("Library.Sections.Label exists, calling directly...")
+            Library.Sections.Label(Settings, "First gradient color"):Colorpicker({
             Flag = "AccentColor",
             Default = Library.Theme.Accent,
             Callback = function(Color)
@@ -7714,6 +7717,11 @@ local Library do
     end
 
     Library.CreateSettingsPage = function(self, Window, KeybindList, ModeratorList)
+        -- Configure Window's built-in Settings now that all Library.Sections methods are available
+        if Window.Settings and Library.ConfigureSettings then
+            Library:ConfigureSettings(Window.Settings, Window)
+        end
+        
         local Page = Window:Page({Name = "Settings", Icon = "8622237899"})
 
         local ConfigsSection = Page:Section({Name = "Configs", Side = 1, DefaultOpen = true}) do 
