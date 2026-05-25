@@ -3656,14 +3656,18 @@ local Library do
         end
 
         Library.Page = function(self, Data)
+            print("=== ENTERING Library.Page function ===")
             Data = Data or { }
 
             -- Debug: Check if Window has required structure
             print("Library.Page called with self:", self ~= nil)
+            print("self type:", type(self))
             print("self.Items exists:", self and self.Items ~= nil)
             if self and self.Items then
+                print("self.Items type:", type(self.Items))
                 print("self.Items.LeftTabs exists:", self.Items.LeftTabs ~= nil)
                 if self.Items.LeftTabs then
+                    print("self.Items.LeftTabs type:", type(self.Items.LeftTabs))
                     print("self.Items.LeftTabs.Instance exists:", self.Items.LeftTabs.Instance ~= nil)
                 end
             end
@@ -3900,6 +3904,7 @@ local Library do
             end
             
             TableInsert(Page.Window.Pages, Page)
+            print("=== Library.Page function completing successfully ===")
             return setmetatable(Page, {__index = Library.Pages})
         end
 
