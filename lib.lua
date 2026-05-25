@@ -3397,7 +3397,7 @@ local Library do
                 end
 
                 -- Ensure Settings always has the Label method by setting metatable outside conditional
-                setmetatable(Settings, Library.Sections)
+                setmetatable(Settings, {__index = Library.Sections})
 
                 Settings:Label("First gradient color"):Colorpicker({
                     Flag = "AccentColor",
@@ -3929,7 +3929,7 @@ local Library do
             end
             
             TableInsert(Page.Window.Pages, Page)
-            return setmetatable(Page, Library.Pages)
+            return setmetatable(Page, {__index = Library.Pages})
         end
 
         Library.Pages.GlobalChat = function(self, Side)
@@ -4896,7 +4896,7 @@ local Library do
 
             Section.Page.Sections[Section.Name] = Section
 
-            return setmetatable(Section, Library.Sections)
+            return setmetatable(Section, {__index = Library.Sections})
         end
 
         Library.Sections.Toggle = function(self, Data)
@@ -5323,7 +5323,7 @@ local Library do
 
                 Settings.Items = SettingsItem
 
-                setmetatable(Settings, Library.Sections)
+                setmetatable(Settings, {__index = Library.Sections})
                 return Settings
             end
 
