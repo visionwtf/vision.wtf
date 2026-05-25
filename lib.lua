@@ -3658,6 +3658,16 @@ local Library do
         Library.Page = function(self, Data)
             Data = Data or { }
 
+            -- Debug: Check if Window has required structure
+            print("Library.Page called with self:", self ~= nil)
+            print("self.Items exists:", self and self.Items ~= nil)
+            if self and self.Items then
+                print("self.Items.LeftTabs exists:", self.Items.LeftTabs ~= nil)
+                if self.Items.LeftTabs then
+                    print("self.Items.LeftTabs.Instance exists:", self.Items.LeftTabs.Instance ~= nil)
+                end
+            end
+
             local Page = {
                 Window = self,
 
@@ -3670,6 +3680,15 @@ local Library do
                 Sections = { },
                 Active = false
             }
+
+            -- Check if we can proceed with UI creation
+            if not (self and self.Items and self.Items.LeftTabs and self.Items.LeftTabs.Instance) then
+                print("ERROR: Window structure is incomplete for Page creation")
+                print("self:", self ~= nil)
+                print("self.Items:", self and self.Items ~= nil)
+                print("self.Items.LeftTabs:", self and self.Items and self.Items.LeftTabs ~= nil)
+                return nil
+            end
 
             local Items = { } do
                 Items["Inactive"] = Instances:Create("TextButton", {
