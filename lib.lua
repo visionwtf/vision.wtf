@@ -3394,8 +3394,10 @@ local Library do
                     -- SettingsButton removed - no longer needed
     
                     Settings.Items = SettingsItems
-                    setmetatable(Settings, Library.Sections)
                 end
+
+                -- Ensure Settings always has the Label method by setting metatable outside conditional
+                setmetatable(Settings, Library.Sections)
 
                 Settings:Label("First gradient color"):Colorpicker({
                     Flag = "AccentColor",
