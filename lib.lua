@@ -2055,7 +2055,7 @@ local Library do
                 Instances:Create("UIListLayout", {
                     Parent = Items["Content"].Instance,
                     Name = "\0",
-                    Padding = UDimNew(0, 4),
+                    Padding = UDimNew(0, 4), -- Spacing between keybind items
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
                 
@@ -2065,14 +2065,8 @@ local Library do
                     Name = "\0",
                     PaddingTop = UDimNew(0, 0), -- Start with no padding
                     PaddingBottom = UDimNew(0, 0),
-                    PaddingRight = UDimNew(0, 8),
-                    PaddingLeft = UDimNew(0, 8)
-                })
-                
-                Instances:Create("UIPadding", {
-                    Parent = Items["KeybindsList"].Instance,
-                    Name = "\0",
-                    PaddingRight = UDimNew(0, 12)
+                    PaddingRight = UDimNew(0, 12), -- More padding to match in-game
+                    PaddingLeft = UDimNew(0, 12)
                 })                
             end
 
@@ -2201,9 +2195,9 @@ local Library do
                 if visibleCount > 0 then
                     ContentPadding.PaddingTop = UDimNew(0, 8)
                     ContentPadding.PaddingBottom = UDimNew(0, 8)
-                    -- Set fixed width to prevent stretching
+                    -- Set fixed width to prevent stretching, calculate height based on 24px items + padding
                     Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.Y
-                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 40 + (visibleCount * 24) + 16) -- Fixed width, calculated height
+                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 40 + (visibleCount * 28) + 16) -- 24px items + 4px spacing
                 else
                     ContentPadding.PaddingTop = UDimNew(0, 0)
                     ContentPadding.PaddingBottom = UDimNew(0, 0)
@@ -2220,11 +2214,28 @@ local Library do
                         pcall(function()
                             local keyText = "None"
                             if keybind.Key and keybind.Key ~= Enum.KeyCode.Unknown then
-                                keyText = Keys[tostring(keybind.Key)] or tostring(keybind.Key):gsub("Enum.KeyCode.", "")
+                                -- Handle both string and enum key values
+                                local keyString = tostring(keybind.Key)
+                                if keyString:find("Enum.KeyCode.") then
+                                    keyText = Keys[keyString] or keyString:gsub("Enum.KeyCode.", "")
+                                else
+                                    keyText = Keys[keyString] or keyString
+                                end
+                                
+                                -- Fallback if we still have a table reference
+                                if keyText:find("table:") then
+                                    keyText = "None"
+                                end
                             end
-                            local item = KeybindList:Add(keybind.Name, keyText)
-                            if item then
-                                item:SetStatus(keybind.Toggled or false)
+                            
+                            -- Only add if we have a valid key
+                            if keyText ~= "None" then
+                                local item = KeybindList:Add(keybind.Name, keyText)
+                                if item then
+                                    item:SetStatus(keybind.Toggled or false)
+                                    -- Store reference for future updates
+                                    keybind.KeyListItem = item
+                                end
                             end
                         end)
                     end
