@@ -2015,11 +2015,11 @@ local Library do
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  Items["Title"]:AddToTheme({TextColor3 = "Text"})
 
-                -- Content backdrop (same color as header with opacity like in-game mods)
+                -- Content backdrop (same color as header, no opacity)
                 Items["ContentBackdrop"] = Instances:Create("Frame", {
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
-                    BackgroundTransparency = 0.3, -- Add opacity like in-game
+                    BackgroundTransparency = 0, -- No opacity, solid color
                     Position = UDim2New(0, 0, 0, 40),
                     Size = UDim2New(1, 0, 0, 16),
                     BackgroundColor3 = FromRGB(20, 20, 24), -- Same color as header
@@ -2153,14 +2153,26 @@ local Library do
 
                 function NewKey:SetStatus(Bool)
                     if Bool then 
-                        -- Show blue dot when active
+                        -- Show blue dot and animate text to the right when active
                         if NewKeyAccent and NewKeyAccent.Instance then
                             NewKeyAccent.Instance.BackgroundTransparency = 0
                         end
+                        if NewKeyText and NewKeyText.Instance then
+                            -- Animate text moving right (small indent for active state)
+                            Tween:Create(NewKeyText, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                                Position = UDim2New(0, 25, 0.5, 0) -- Move 5px right from original 20px
+                            }, true)
+                        end
                     else
-                        -- Hide blue dot when inactive
+                        -- Hide blue dot and animate text back to the left when inactive
                         if NewKeyAccent and NewKeyAccent.Instance then
                             NewKeyAccent.Instance.BackgroundTransparency = 1
+                        end
+                        if NewKeyText and NewKeyText.Instance then
+                            -- Animate text moving back to original position
+                            Tween:Create(NewKeyText, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                                Position = UDim2New(0, 20, 0.5, 0) -- Back to original position
+                            }, true)
                         end
                     end
                 end
