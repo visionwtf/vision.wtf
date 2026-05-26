@@ -1947,51 +1947,82 @@ local Library do
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(0, 0.5),
-                    BackgroundTransparency = 0, -- Solid background for header
+                    BackgroundTransparency = 1, -- Transparent container
                     Position = UDim2New(0, 20, 0.5, -50),
                     Size = UDim2New(0, 200, 0, 40), -- Start with header size
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.None,
-                    BackgroundColor3 = FromRGB(16, 16, 20), -- Header background
+                    BackgroundColor3 = FromRGB(16, 16, 20),
                     Active = true
-                })  Items["KeybindsList"]:AddToTheme({BackgroundColor3 = "Background"})
+                })
 
                 Items["KeybindsList"]:MakeDraggable()
                 
-                -- Header corner radius (top only)
+                -- Main panel corner radius
                 Instances:Create("UICorner", {
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
                     CornerRadius = UDimNew(0, 8)
                 })
                 
-                -- Add the darker backdrop area below header (like in-game mods)
-                Items["Backdrop"] = Instances:Create("Frame", {
-                    Parent = Items["KeybindsList"].Instance,
-                    Name = "\0",
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    BackgroundTransparency = 0,
-                    Position = UDim2New(0, 0, 1, 0), -- Below header
-                    Size = UDim2New(1, 0, 0, 16), -- Start small, will grow with content
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(10, 10, 14), -- Darker backdrop like in-game
-                    ZIndex = 1
-                })
-                
-                -- Backdrop corner radius (bottom only)
-                Instances:Create("UICorner", {
-                    Parent = Items["Backdrop"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 8)
-                })
-                
+                -- Header section (dark like in-game)
                 Items["Top"] = Instances:Create("Frame", {
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
                     Size = UDim2New(1, 0, 0, 40),
                     BorderSizePixel = 0,
-                    BackgroundTransparency = 1, -- Transparent, part of main background
+                    BackgroundTransparency = 0,
+                    BackgroundColor3 = FromRGB(16, 16, 20), -- Dark header like in-game
+                    ZIndex = 2
+                })  Items["Top"]:AddToTheme({BackgroundColor3 = "Background"})
+                
+                -- Header corner radius (top corners only)
+                Instances:Create("UICorner", {
+                    Parent = Items["Top"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 8)
+                })
+                
+                -- Hide bottom corners of header
+                Instances:Create("Frame", {
+                    Parent = Items["Top"].Instance,
+                    Name = "\0",
+                    Position = UDim2New(0, 0, 0.5, 0),
+                    Size = UDim2New(1, 0, 0.5, 0),
+                    BackgroundColor3 = FromRGB(16, 16, 20),
+                    BorderSizePixel = 0,
+                    ZIndex = 3
+                })
+                
+                -- Backdrop section (lighter like in-game)
+                Items["Backdrop"] = Instances:Create("Frame", {
+                    Parent = Items["KeybindsList"].Instance,
+                    Name = "\0",
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BackgroundTransparency = 0,
+                    Position = UDim2New(0, 0, 0, 40), -- Below header
+                    Size = UDim2New(1, 0, 0, 16), -- Start small, will grow with content
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(45, 45, 50), -- Lighter backdrop like in-game
+                    ZIndex = 1
+                })
+                
+                -- Backdrop corner radius (bottom corners only)
+                Instances:Create("UICorner", {
+                    Parent = Items["Backdrop"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 8)
+                })
+                
+                -- Hide top corners of backdrop
+                Instances:Create("Frame", {
+                    Parent = Items["Backdrop"].Instance,
+                    Name = "\0",
+                    Position = UDim2New(0, 0, 0, 0),
+                    Size = UDim2New(1, 0, 0.5, 0),
+                    BackgroundColor3 = FromRGB(45, 45, 50),
+                    BorderSizePixel = 0,
                     ZIndex = 2
                 })
                 
@@ -2005,7 +2036,7 @@ local Library do
                     Image = "rbxassetid://81598136527047",
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 15, 0.5, 0),
-                    ZIndex = 3,
+                    ZIndex = 4, -- Above header overlay
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -2036,11 +2067,6 @@ local Library do
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  Items["Title"]:AddToTheme({TextColor3 = "Text"})
                 
-                Instances:Create("UICorner", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0"
-                })
-                
                 Items["Content"] = Instances:Create("Frame", {
                     Parent = Items["Backdrop"].Instance, -- Parent to backdrop instead
                     Name = "\0",
@@ -2051,7 +2077,7 @@ local Library do
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundColor3 = FromRGB(255, 255, 255),
-                    ZIndex = 2
+                    ZIndex = 3 -- Above backdrop
                 })
 
                 Instances:Create("UIListLayout", {
@@ -2156,12 +2182,20 @@ local Library do
                 function NewKey:SetStatus(Bool)
                     if Bool then 
                         -- Show blue dot and brighten text when keybind is active
-                        NewKeyAccent:Tween(nil, {BackgroundTransparency = 0})
-                        NewKeyText:Tween(nil, {TextTransparency = 0})
+                        if NewKeyAccent and NewKeyAccent.Instance then
+                            NewKeyAccent.Instance.BackgroundTransparency = 0
+                        end
+                        if NewKeyText and NewKeyText.Instance then
+                            NewKeyText.Instance.TextTransparency = 0
+                        end
                     else
                         -- Hide blue dot and dim text when keybind is inactive
-                        NewKeyAccent:Tween(nil, {BackgroundTransparency = 1})
-                        NewKeyText:Tween(nil, {TextTransparency = 0.4})
+                        if NewKeyAccent and NewKeyAccent.Instance then
+                            NewKeyAccent.Instance.BackgroundTransparency = 1
+                        end
+                        if NewKeyText and NewKeyText.Instance then
+                            NewKeyText.Instance.TextTransparency = 0.4
+                        end
                     end
                 end
 
