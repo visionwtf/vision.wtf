@@ -1942,90 +1942,38 @@ local Library do
             Library.KeyList = KeybindList
 
             local Items = { } do 
+                -- Main panel - exactly like in-game mods (single solid frame)
                 Items["KeybindsList"] = Instances:Create("Frame", {
                     Parent = Library.Holder.Instance,
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(0, 0.5),
-                    BackgroundTransparency = 1, -- Transparent container
+                    BackgroundTransparency = 0,
                     Position = UDim2New(0, 20, 0.5, -50),
-                    Size = UDim2New(0, 200, 0, 40), -- Start with header size
+                    Size = UDim2New(0, 200, 0, 56),
                     BorderSizePixel = 0,
-                    AutomaticSize = Enum.AutomaticSize.None,
-                    BackgroundColor3 = FromRGB(16, 16, 20),
+                    BackgroundColor3 = FromRGB(20, 20, 24), -- Dark header color
                     Active = true
                 })
 
                 Items["KeybindsList"]:MakeDraggable()
                 
-                -- Main panel corner radius
                 Instances:Create("UICorner", {
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
                     CornerRadius = UDimNew(0, 8)
                 })
-                
-                -- Header section (dark like in-game)
+
+                -- Header area (transparent, just for positioning)
                 Items["Top"] = Instances:Create("Frame", {
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
-                    BorderColor3 = FromRGB(0, 0, 0),
+                    BackgroundTransparency = 1,
                     Size = UDim2New(1, 0, 0, 40),
-                    BorderSizePixel = 0,
-                    BackgroundTransparency = 0,
-                    BackgroundColor3 = FromRGB(16, 16, 20), -- Dark header like in-game
-                    ZIndex = 2
-                })  Items["Top"]:AddToTheme({BackgroundColor3 = "Background"})
-                
-                -- Header corner radius (top corners only)
-                Instances:Create("UICorner", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 8)
-                })
-                
-                -- Hide bottom corners of header
-                Instances:Create("Frame", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    Position = UDim2New(0, 0, 0.5, 0),
-                    Size = UDim2New(1, 0, 0.5, 0),
-                    BackgroundColor3 = FromRGB(16, 16, 20),
-                    BorderSizePixel = 0,
-                    ZIndex = 3
-                })
-                
-                -- Backdrop section (lighter like in-game)
-                Items["Backdrop"] = Instances:Create("Frame", {
-                    Parent = Items["KeybindsList"].Instance,
-                    Name = "\0",
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    BackgroundTransparency = 0,
-                    Position = UDim2New(0, 0, 0, 40), -- Below header
-                    Size = UDim2New(1, 0, 0, 16), -- Start small, will grow with content
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(45, 45, 50), -- Lighter backdrop like in-game
-                    ZIndex = 1
-                })
-                
-                -- Backdrop corner radius (bottom corners only)
-                Instances:Create("UICorner", {
-                    Parent = Items["Backdrop"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 8)
-                })
-                
-                -- Hide top corners of backdrop
-                Instances:Create("Frame", {
-                    Parent = Items["Backdrop"].Instance,
-                    Name = "\0",
                     Position = UDim2New(0, 0, 0, 0),
-                    Size = UDim2New(1, 0, 0.5, 0),
-                    BackgroundColor3 = FromRGB(45, 45, 50),
-                    BorderSizePixel = 0,
                     ZIndex = 2
                 })
-                
+
                 Items["Icon"] = Instances:Create("ImageLabel", {
                     Parent = Items["Top"].Instance,
                     Name = "\0",
@@ -2036,7 +1984,7 @@ local Library do
                     Image = "rbxassetid://81598136527047",
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 15, 0.5, 0),
-                    ZIndex = 4, -- Above header overlay
+                    ZIndex = 3,
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -2062,44 +2010,71 @@ local Library do
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 45, 0.5, -1),
                     BorderSizePixel = 0,
-                    ZIndex = 2,
+                    ZIndex = 3,
                     TextSize = 15,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  Items["Title"]:AddToTheme({TextColor3 = "Text"})
-                
-                Items["Content"] = Instances:Create("Frame", {
-                    Parent = Items["Backdrop"].Instance, -- Parent to backdrop instead
+
+                -- Content backdrop (lighter area like in-game mods)
+                Items["ContentBackdrop"] = Instances:Create("Frame", {
+                    Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    BackgroundTransparency = 1, -- Transparent
-                    Position = UDim2New(0, 0, 0, 0), -- Start at top of backdrop
-                    Size = UDim2New(1, 0, 0, 0),
+                    BackgroundTransparency = 0,
+                    Position = UDim2New(0, 0, 0, 40),
+                    Size = UDim2New(1, 0, 0, 16),
+                    BackgroundColor3 = FromRGB(55, 55, 60), -- Lighter grey like in-game
                     BorderSizePixel = 0,
+                    ZIndex = 1
+                })
+                
+                -- Round bottom corners only
+                Instances:Create("UICorner", {
+                    Parent = Items["ContentBackdrop"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 8)
+                })
+                
+                -- Hide top corners
+                Instances:Create("Frame", {
+                    Parent = Items["ContentBackdrop"].Instance,
+                    Name = "\0",
+                    Position = UDim2New(0, 0, 0, 0),
+                    Size = UDim2New(1, 0, 0, 8),
+                    BackgroundColor3 = FromRGB(55, 55, 60),
+                    BorderSizePixel = 0,
+                    ZIndex = 2
+                })
+
+                -- Content area for keybind items
+                Items["Content"] = Instances:Create("Frame", {
+                    Parent = Items["ContentBackdrop"].Instance,
+                    Name = "\0",
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 0, 0, 0),
+                    Size = UDim2New(1, 0, 1, 0),
                     AutomaticSize = Enum.AutomaticSize.Y,
-                    BackgroundColor3 = FromRGB(255, 255, 255),
-                    ZIndex = 3 -- Above backdrop
+                    ZIndex = 3
                 })
 
                 Instances:Create("UIListLayout", {
                     Parent = Items["Content"].Instance,
                     Name = "\0",
-                    Padding = UDimNew(0, 4), -- Spacing between keybind items
+                    Padding = UDimNew(0, 2),
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
                 
-                -- Only add padding when there are keybinds
-                local ContentPadding = Instances:Create("UIPadding", {
+                Instances:Create("UIPadding", {
                     Parent = Items["Content"].Instance,
                     Name = "\0",
-                    PaddingTop = UDimNew(0, 0), -- Start with no padding
-                    PaddingBottom = UDimNew(0, 0),
-                    PaddingRight = UDimNew(0, 12), -- More padding to match in-game
+                    PaddingTop = UDimNew(0, 8),
+                    PaddingBottom = UDimNew(0, 8),
+                    PaddingRight = UDimNew(0, 12),
                     PaddingLeft = UDimNew(0, 12)
-                })                
+                })
             end
 
             function KeybindList:SetVisibility(Bool)
-                Items["KeybindsList"].Instance.Visible = Bool
+                Items["KeybindsList"].Instance.Visible = Bool 
             end
             
             -- Add alias for potential typo
@@ -2116,27 +2091,27 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
-                    BackgroundTransparency = 1, -- Transparent, part of main panel
-                    Size = UDim2New(1, 0, 0, 28), -- Match in-game height
+                    BackgroundTransparency = 1,
+                    Size = UDim2New(1, 0, 0, 24),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = FromRGB(255, 255, 255),
                     Visible = (Key and Key ~= "" and Key ~= "None"),
-                    ZIndex = 3
+                    ZIndex = 4
                 })
                 
-                -- Blue dot indicator for active keybinds (like in-game)
+                -- Blue dot indicator
                 local NewKeyAccent = Instances:Create("Frame", {
                     Parent = NewKey.Instance,
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(0, 0.5),
                     BackgroundTransparency = 1, -- Start hidden
-                    Position = UDim2New(0, 12, 0.5, 0), -- Match in-game positioning
-                    Size = UDim2New(0, 8, 0, 8), -- Slightly larger like in-game
+                    Position = UDim2New(0, 8, 0.5, 0),
+                    Size = UDim2New(0, 6, 0, 6),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(0, 162, 255), -- Blue like in-game
-                    ZIndex = 4
+                    BackgroundColor3 = FromRGB(0, 162, 255),
+                    ZIndex = 5
                 })  NewKeyAccent:AddToTheme({BackgroundColor3 = "Accent"})
 
                 Instances:Create("UICorner", {
@@ -2148,53 +2123,44 @@ local Library do
                     Parent = NewKey.Instance,
                     Name = "\0",
                     FontFace = Library.Font,
-                    TextColor3 = FromRGB(220, 220, 220), -- Brighter text for better visibility
-                    TextTransparency = 0, -- No transparency for better visibility
+                    TextColor3 = FromRGB(255, 255, 255),
+                    TextTransparency = 0,
                     Text = (Key and Key ~= "" and Key ~= "None") and (Name .. " [" .. Key .. "]") or "",
-                    Size = UDim2New(1, -30, 1, 0), -- Leave space for blue dot
+                    Size = UDim2New(1, -20, 1, 0),
                     AnchorPoint = Vector2New(0, 0.5),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 28, 0.5, 0), -- Offset for blue dot
+                    Position = UDim2New(0, 20, 0.5, 0),
                     BorderColor3 = FromRGB(0, 0, 0),
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    TextSize = 14, -- Match in-game text size
+                    TextSize = 13,
                     BackgroundColor3 = FromRGB(255, 255, 255),
-                    ZIndex = 4
+                    ZIndex = 5
                 })  NewKeyText:AddToTheme({TextColor3 = "Text"})
 
                 function NewKey:Set(Name, Key)
-                    -- Safety checks
                     if not NewKeyText or not NewKeyText.Instance then return end
                     if not NewKey or not NewKey.Instance then return end
                     
-                    -- Only show keybind if it has a valid key
                     if Key and Key ~= "" and Key ~= "None" and not Key:find("table:") then
                         NewKeyText.Instance.Text = Name .. " [" .. Key .. "]"
                         NewKey.Instance.Visible = true
                     else
                         NewKey.Instance.Visible = false
                     end
-                    -- Update keybind list size after visibility change
                     pcall(function() KeybindList:UpdateSize() end)
                 end
 
                 function NewKey:SetStatus(Bool)
                     if Bool then 
-                        -- Show blue dot and brighten text when keybind is active
+                        -- Show blue dot when active
                         if NewKeyAccent and NewKeyAccent.Instance then
                             NewKeyAccent.Instance.BackgroundTransparency = 0
                         end
-                        if NewKeyText and NewKeyText.Instance then
-                            NewKeyText.Instance.TextTransparency = 0
-                        end
                     else
-                        -- Hide blue dot and dim text when keybind is inactive
+                        -- Hide blue dot when inactive
                         if NewKeyAccent and NewKeyAccent.Instance then
                             NewKeyAccent.Instance.BackgroundTransparency = 1
-                        end
-                        if NewKeyText and NewKeyText.Instance then
-                            NewKeyText.Instance.TextTransparency = 0.4
                         end
                     end
                 end
@@ -2210,7 +2176,7 @@ local Library do
                 if not Items["KeybindsList"] or not Items["KeybindsList"].Instance then 
                     return 
                 end
-                if not Items["Backdrop"] or not Items["Backdrop"].Instance then 
+                if not Items["ContentBackdrop"] or not Items["ContentBackdrop"].Instance then 
                     return 
                 end
                 
@@ -2222,25 +2188,16 @@ local Library do
                     end
                 end
 
-                -- Find the ContentPadding object
-                local ContentPadding = Items["Content"].Instance:FindFirstChild("UIPadding")
-                if not ContentPadding then return end
-
-                -- Update size based on visible keybinds (like in-game mods)
+                -- Update sizes
                 if visibleCount > 0 then
-                    ContentPadding.PaddingTop = UDimNew(0, 8)
-                    ContentPadding.PaddingBottom = UDimNew(0, 8)
-                    -- Calculate backdrop height: padding (16px) + items (28px each)
-                    local backdropHeight = 16 + (visibleCount * 28)
-                    Items["Backdrop"].Instance.Size = UDim2New(1, 0, 0, backdropHeight)
-                    -- Header stays at 40px, total = header + backdrop
-                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 40 + backdropHeight)
+                    -- Calculate content height: padding (16px) + items (24px each) + spacing (2px each)
+                    local contentHeight = 16 + (visibleCount * 24) + ((visibleCount - 1) * 2)
+                    Items["ContentBackdrop"].Instance.Size = UDim2New(1, 0, 0, contentHeight)
+                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 40 + contentHeight)
                 else
-                    ContentPadding.PaddingTop = UDimNew(0, 8)
-                    ContentPadding.PaddingBottom = UDimNew(0, 8)
-                    -- Empty state: small backdrop (like in-game mods)
-                    Items["Backdrop"].Instance.Size = UDim2New(1, 0, 0, 16)
-                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 56) -- 40 + 16
+                    -- Empty state
+                    Items["ContentBackdrop"].Instance.Size = UDim2New(1, 0, 0, 16)
+                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 56)
                 end
             end
 
