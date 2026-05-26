@@ -766,11 +766,15 @@ local Library do
 
     Library.Unload = function(self)
         for Index, Value in self.Connections do 
-            Value.Connection:Disconnect()
+            if Value and Value.Connection then
+                Value.Connection:Disconnect()
+            end
         end
 
         for Index, Value in self.Threads do 
-            coroutine.close(Value)
+            if Value then
+                coroutine.close(Value)
+            end
         end
 
         if self.Holder then 
@@ -820,6 +824,11 @@ local Library do
     end
 
     Library.Connect = function(self, Event, Callback, Name)
+        if not Event or not Callback then
+            warn("Library.Connect: Event or Callback is nil")
+            return
+        end
+        
         Name = Name or StringFormat("connection_number_%s_%s", self.UnnamedConnections + 1, HttpService:GenerateGUID(false))
 
         local NewConnection = {
@@ -830,7 +839,14 @@ local Library do
         }
 
         Library:Thread(function()
-            NewConnection.Connection = Event:Connect(Callback)
+            local success, result = pcall(function()
+                return Event:Connect(Callback)
+            end)
+            if success then
+                NewConnection.Connection = result
+            else
+                warn("Failed to connect event: " .. tostring(result))
+            end
         end)
 
         TableInsert(self.Connections, NewConnection)
@@ -3433,7 +3449,14 @@ local Library do
         
                         if Settings.IsOpen then 
                             for Index, Value in Settings.Elements do
-                                Value:RefreshPosition(true)
+                                if Value and Value.RefreshPosition and type(Value.RefreshPosition) == "function" then
+                                    local success, err = pcall(function()
+                                        Value:RefreshPosition(true)
+                                    end)
+                                    if not success then
+                                        warn("Settings RefreshPosition error for element " .. tostring(Index) .. ": " .. tostring(err))
+                                    end
+                                end
                                 task.wait(0.03)
                             end
     
@@ -3451,7 +3474,14 @@ local Library do
                             Library.OpenFrames[Settings] = Settings 
                         else
                             for Index, Value in Settings.Elements do
-                                Value:RefreshPosition(false)
+                                if Value and Value.RefreshPosition and type(Value.RefreshPosition) == "function" then
+                                    local success, err = pcall(function()
+                                        Value:RefreshPosition(false)
+                                    end)
+                                    if not success then
+                                        warn("Settings RefreshPosition error for element " .. tostring(Index) .. ": " .. tostring(err))
+                                    end
+                                end
                             end
     
                             if Library.OpenFrames[Settings] then 
@@ -5095,10 +5125,13 @@ local Library do
 
             function Section:TweenElements(Bool, Debounce)
                 for Index, Value in Section.Elements do
-                    if Value and Value.RefreshPosition then
-                        pcall(function()
+                    if Value and Value.RefreshPosition and type(Value.RefreshPosition) == "function" then
+                        local success, err = pcall(function()
                             Value:RefreshPosition(Bool)
                         end)
+                        if not success then
+                            warn("RefreshPosition error for element " .. tostring(Index) .. ": " .. tostring(err))
+                        end
                     end
                     if not Debounce then 
                         task.wait(0.03)
@@ -5439,7 +5472,14 @@ local Library do
                     if Settings.IsOpen then 
                         task.spawn(function()
                             for Index, Value in Settings.Elements do
-                                Value:RefreshPosition(true)
+                                if Value and Value.RefreshPosition and type(Value.RefreshPosition) == "function" then
+                                    local success, err = pcall(function()
+                                        Value:RefreshPosition(true)
+                                    end)
+                                    if not success then
+                                        warn("Settings RefreshPosition error for element " .. tostring(Index) .. ": " .. tostring(err))
+                                    end
+                                end
                                 task.wait(0.03)
                             end
                         end)
@@ -5463,7 +5503,14 @@ local Library do
                         Library.OpenFrames[Settings] = Settings 
                     else
                         for Index, Value in Settings.Elements do
-                            Value:RefreshPosition(false)
+                            if Value and Value.RefreshPosition and type(Value.RefreshPosition) == "function" then
+                                local success, err = pcall(function()
+                                    Value:RefreshPosition(false)
+                                end)
+                                if not success then
+                                    warn("Settings RefreshPosition error for element " .. tostring(Index) .. ": " .. tostring(err))
+                                end
+                            end
                         end
 
                         if Library.OpenFrames[Settings] then 
@@ -5602,12 +5649,21 @@ local Library do
             end
 
             function Toggle:RefreshPosition(Bool)
+                if not Items or not Items["Indicator"] or not Items["Text"] then
+                    warn("Toggle RefreshPosition: Items, Indicator, or Text is nil")
+                    return
+                end
+                
                 if Bool then 
                     Items["Indicator"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0)})
                     Items["Text"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 24, 0, 0)})
                 else
-                    Items["Indicator"].Instance.Position = UDim2New(0, 60, 0, 0)
-                    Items["Text"].Instance.Position = UDim2New(0, 84, 0, 0)
+                    if Items["Indicator"].Instance then
+                        Items["Indicator"].Instance.Position = UDim2New(0, 60, 0, 0)
+                    end
+                    if Items["Text"].Instance then
+                        Items["Text"].Instance.Position = UDim2New(0, 84, 0, 0)
+                    end
                 end 
             end
 
@@ -5969,13 +6025,22 @@ local Library do
             end
 
             function Slider:RefreshPosition(Bool)
+                if not Items or not Items["RealSlider"] or not Items["Text"] then
+                    warn("Slider RefreshPosition: Items, RealSlider, or Text is nil")
+                    return
+                end
+                
                 if Bool then 
                     Items["RealSlider"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 20, 1, -3)})
                     Items["Text"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0)})
                    -- Items["Value"].Instance.TextTransparency = 0.3
                 else
-                    Items["RealSlider"].Instance.Position = UDim2New(0, 80, 1, -3)
-                    Items["Text"].Instance.Position = UDim2New(0, 80, 0, 0)
+                    if Items["RealSlider"].Instance then
+                        Items["RealSlider"].Instance.Position = UDim2New(0, 80, 1, -3)
+                    end
+                    if Items["Text"].Instance then
+                        Items["Text"].Instance.Position = UDim2New(0, 80, 0, 0)
+                    end
                    -- Items["Value"].Instance.TextTransparency = 1
                 end
             end
@@ -6253,12 +6318,21 @@ local Library do
             end
 
             function Dropdown:RefreshPosition(Bool)
+                if not Items or not Items["Text"] or not Items["RealDropdown"] then
+                    warn("Dropdown RefreshPosition: Items, Text, or RealDropdown is nil")
+                    return
+                end
+                
                 if Bool then
                     Items["Text"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0.5, 0)})
                     Items["RealDropdown"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(1, 0, 0, 0)})
                 else
-                    Items["Text"].Instance.Position = UDim2New(0, 30, 0.5, 0)
-                    Items["RealDropdown"].Instance.Position = UDim2New(1, 30, 0, 0)
+                    if Items["Text"].Instance then
+                        Items["Text"].Instance.Position = UDim2New(0, 30, 0.5, 0)
+                    end
+                    if Items["RealDropdown"].Instance then
+                        Items["RealDropdown"].Instance.Position = UDim2New(1, 30, 0, 0)
+                    end
                 end
             end
 
@@ -6301,7 +6375,14 @@ local Library do
                     Library:Thread(function()
                         for Index, Value in Dropdown.OptionsWithIndexes do 
                             task.spawn(function()
-                                Value:RefreshPosition(true)
+                                if Value and Value.RefreshPosition and type(Value.RefreshPosition) == "function" then
+                                    local success, err = pcall(function()
+                                        Value:RefreshPosition(true)
+                                    end)
+                                    if not success then
+                                        warn("Dropdown option RefreshPosition error for option " .. tostring(Index) .. ": " .. tostring(err))
+                                    end
+                                end
                             end)
                             task.wait(0.05)
                         end
@@ -6323,7 +6404,14 @@ local Library do
                     if not Dropdown.IsOpen then
                         for Index, Value in Dropdown.OptionsWithIndexes do 
                             task.spawn(function()
-                                Value:RefreshPosition(false)
+                                if Value and Value.RefreshPosition and type(Value.RefreshPosition) == "function" then
+                                    local success, err = pcall(function()
+                                        Value:RefreshPosition(false)
+                                    end)
+                                    if not success then
+                                        warn("Dropdown option RefreshPosition error for option " .. tostring(Index) .. ": " .. tostring(err))
+                                    end
+                                end
                             end)
                         end
                     end
@@ -6511,6 +6599,11 @@ local Library do
                 end
 
                 function OptionData:RefreshPosition(Bool)
+                    if not OptionAccent or not OptionText then
+                        warn("OptionData RefreshPosition: OptionAccent or OptionText is nil")
+                        return
+                    end
+                    
                     if Bool then 
                         if OptionData.Selected then
                             OptionAccent:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0.5, 0)})
@@ -6520,10 +6613,16 @@ local Library do
                         end
                     else
                         if OptionData.Selected then
-                            OptionAccent.Instance.Position = UDim2New(0, 30, 0.5, 0)
-                            OptionText.Instance.Position = UDim2New(0, 45, 0.5, 0)
+                            if OptionAccent.Instance then
+                                OptionAccent.Instance.Position = UDim2New(0, 30, 0.5, 0)
+                            end
+                            if OptionText.Instance then
+                                OptionText.Instance.Position = UDim2New(0, 45, 0.5, 0)
+                            end
                         else
-                            OptionText.Instance.Position = UDim2New(0, 30, 0.5, 0)
+                            if OptionText.Instance then
+                                OptionText.Instance.Position = UDim2New(0, 30, 0.5, 0)
+                            end
                         end
                     end
 
@@ -6721,19 +6820,30 @@ local Library do
             end
 
             function Label:RefreshPosition(Bool)
+                if not Items or not Items["Text"] then
+                    warn("Label RefreshPosition: Items or Text is nil")
+                    return
+                end
+                
                 if Bool then 
                     Items["Text"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 5)})
 
                     if Items["SubElements"] then
                         Items["SubElements"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 30)})
-                        Tween:Create(Items["Label"].Instance:FindFirstChild("nig"), TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(1, -16, 1, -6)}, true)
+                        if Items["Label"] and Items["Label"].Instance and Items["Label"].Instance:FindFirstChild("nig") then
+                            Tween:Create(Items["Label"].Instance:FindFirstChild("nig"), TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(1, -16, 1, -6)}, true)
+                        end
                     end
                 else 
-                    Items["Text"].Instance.Position = UDim2New(0, 30, 0, 5)
+                    if Items["Text"].Instance then
+                        Items["Text"].Instance.Position = UDim2New(0, 30, 0, 5)
+                    end
 
                     if Items["SubElements"] then
                         Items["SubElements"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 30, 0, 30)})
-                        Tween:Create(Items["Label"].Instance:FindFirstChild("nig"), TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(1, 30, 1, -6)}, true)
+                        if Items["Label"] and Items["Label"].Instance and Items["Label"].Instance:FindFirstChild("nig") then
+                            Tween:Create(Items["Label"].Instance:FindFirstChild("nig"), TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(1, 30, 1, -6)}, true)
+                        end
                     end
                 end
             end
@@ -6888,6 +6998,11 @@ local Library do
 
             function Keybind:RefreshPosition(Bool)
                 -- Simplified positioning for new design
+                if not Items or not Items["Container"] or not Items["Container"].Instance then
+                    warn("Keybind RefreshPosition: Items or Container is nil")
+                    return
+                end
+                
                 if Bool then 
                     Items["Container"]:Tween(TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0)})
                 else
@@ -7385,10 +7500,17 @@ local Library do
             end
 
             function Textbox:RefreshPosition(Bool)
+                if not Items or not Items["Background"] then
+                    warn("Textbox RefreshPosition: Items or Background is nil")
+                    return
+                end
+                
                 if Bool then
                     Items["Background"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0)})
                 else
-                    Items["Background"].Instance.Position = UDim2New(0, 30, 0, 0)
+                    if Items["Background"].Instance then
+                        Items["Background"].Instance.Position = UDim2New(0, 30, 0, 0)
+                    end
                 end
             end
 
@@ -7580,14 +7702,25 @@ local Library do
             end
 
             function Dropdown:RefreshPosition(Bool)
+                if not Items or not Items["Background"] or not Items["Search"] or not Items["_"] then
+                    warn("Dropdown RefreshPosition: Items, Background, Search, or _ is nil")
+                    return
+                end
+                
                 if Bool then
                     Items["Background"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 30)})
                     Items["Search"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0)})
                     Items["_"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 25)})
                 else
-                    Items["Background"].Instance.Position = UDim2New(0, 30, 0, 30)
-                    Items["Search"].Instance.Position = UDim2New(0, 30, 0, 0)
-                    Items["_"].Instance.Position = UDim2New(0, 30, 0, 25)
+                    if Items["Background"].Instance then
+                        Items["Background"].Instance.Position = UDim2New(0, 30, 0, 30)
+                    end
+                    if Items["Search"].Instance then
+                        Items["Search"].Instance.Position = UDim2New(0, 30, 0, 0)
+                    end
+                    if Items["_"].Instance then
+                        Items["_"].Instance.Position = UDim2New(0, 30, 0, 25)
+                    end
                 end
             end
 
