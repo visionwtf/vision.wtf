@@ -1947,32 +1947,20 @@ local Library do
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(0, 0.5),
-                    BackgroundTransparency = 1, -- Make main frame transparent
-                    Position = UDim2New(0, 20, 0.5, -50), -- Positioned higher to avoid moderator panel
-                    Size = UDim2New(0, 200, 0, 40), -- Fixed width to prevent stretching
+                    BackgroundTransparency = 0, -- Solid background like in-game mods
+                    Position = UDim2New(0, 20, 0.5, -50),
+                    Size = UDim2New(0, 200, 0, 40), -- Start with header size
                     BorderSizePixel = 0,
-                    AutomaticSize = Enum.AutomaticSize.None, -- No automatic sizing initially
-                    BackgroundColor3 = FromRGB(8, 8, 10), -- Darker background to match in-game mods
+                    AutomaticSize = Enum.AutomaticSize.None,
+                    BackgroundColor3 = FromRGB(16, 16, 20), -- Match in-game mods exactly
                     Active = true
                 })  Items["KeybindsList"]:AddToTheme({BackgroundColor3 = "Background"})
 
                 Items["KeybindsList"]:MakeDraggable()
                 
-                -- Add the dark backdrop that extends below header (like in-game mods)
-                Items["Backdrop"] = Instances:Create("Frame", {
-                    Parent = Items["KeybindsList"].Instance,
-                    Name = "\0",
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    BackgroundTransparency = 0,
-                    Position = UDim2New(0, 0, 0, 0),
-                    Size = UDim2New(1, 0, 1, 0), -- Full size of parent
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(6, 6, 8), -- Very dark backdrop like in-game
-                    ZIndex = 1
-                })
-                
+                -- Single corner radius for entire panel
                 Instances:Create("UICorner", {
-                    Parent = Items["Backdrop"].Instance,
+                    Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
                     CornerRadius = UDimNew(0, 8)
                 })
@@ -1983,14 +1971,8 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Size = UDim2New(1, 0, 0, 40),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(12, 12, 15), -- Header background
-                    ZIndex = 2 -- Above backdrop
-                })  Items["Top"]:AddToTheme({BackgroundColor3 = "Element"})
-                
-                Instances:Create("UICorner", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 8)
+                    BackgroundTransparency = 1, -- Transparent, part of main background
+                    ZIndex = 2
                 })
                 
                 Items["Icon"] = Instances:Create("ImageLabel", {
@@ -2003,7 +1985,7 @@ local Library do
                     Image = "rbxassetid://81598136527047",
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 15, 0.5, 0),
-                    ZIndex = 3, -- Above header
+                    ZIndex = 3,
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -2043,13 +2025,13 @@ local Library do
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
-                    BackgroundTransparency = 1,
+                    BackgroundTransparency = 1, -- Transparent, part of main background
                     Position = UDim2New(0, 0, 0, 40),
-                    Size = UDim2New(1, 0, 0, 0), -- Fixed width, start with 0 height
+                    Size = UDim2New(1, 0, 0, 0),
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundColor3 = FromRGB(255, 255, 255),
-                    ZIndex = 2 -- Above backdrop
+                    ZIndex = 2
                 })
 
                 Instances:Create("UIListLayout", {
@@ -2088,34 +2070,27 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
-                    BackgroundTransparency = 0, -- Solid background like in-game mods
-                    Size = UDim2New(1, 0, 0, 24), -- Slightly taller for better match
+                    BackgroundTransparency = 1, -- Transparent, part of main panel
+                    Size = UDim2New(1, 0, 0, 28), -- Match in-game height
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = FromRGB(10, 10, 12), -- Dark solid background matching in-game
+                    BackgroundColor3 = FromRGB(255, 255, 255),
                     Visible = (Key and Key ~= "" and Key ~= "None"),
-                    ZIndex = 3 -- Above backdrop and content
-                })  NewKey:AddToTheme({BackgroundColor3 = "Element"})
-                
-                -- Add corner radius to keybind background
-                Instances:Create("UICorner", {
-                    Parent = NewKey.Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 6) -- Slightly more rounded like in-game
+                    ZIndex = 3
                 })
                 
-                -- Blue dot indicator for active keybinds
+                -- Blue dot indicator for active keybinds (like in-game)
                 local NewKeyAccent = Instances:Create("Frame", {
                     Parent = NewKey.Instance,
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(0, 0.5),
                     BackgroundTransparency = 1, -- Start hidden
-                    Position = UDim2New(0, 10, 0.5, 0), -- Positioned like in-game
-                    Size = UDim2New(0, 6, 0, 6),
+                    Position = UDim2New(0, 12, 0.5, 0), -- Match in-game positioning
+                    Size = UDim2New(0, 8, 0, 8), -- Slightly larger like in-game
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(0, 162, 255), -- Brighter blue like in-game
-                    ZIndex = 4 -- Above keybind item
+                    BackgroundColor3 = FromRGB(0, 162, 255), -- Blue like in-game
+                    ZIndex = 4
                 })  NewKeyAccent:AddToTheme({BackgroundColor3 = "Accent"})
 
                 Instances:Create("UICorner", {
@@ -2127,19 +2102,19 @@ local Library do
                     Parent = NewKey.Instance,
                     Name = "\0",
                     FontFace = Library.Font,
-                    TextColor3 = FromRGB(200, 200, 200), -- Slightly dimmed text like in-game
-                    TextTransparency = 0.1, -- Less transparent for better readability
+                    TextColor3 = FromRGB(180, 180, 180), -- Match in-game text color
+                    TextTransparency = 0.2, -- Slight transparency like in-game
                     Text = (Key and Key ~= "" and Key ~= "None") and (Name .. " [" .. Key .. "]") or "",
-                    Size = UDim2New(1, -24, 1, 0), -- Leave space for blue dot
+                    Size = UDim2New(1, -30, 1, 0), -- Leave space for blue dot
                     AnchorPoint = Vector2New(0, 0.5),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 22, 0.5, 0), -- Offset for blue dot
+                    Position = UDim2New(0, 28, 0.5, 0), -- Offset for blue dot
                     BorderColor3 = FromRGB(0, 0, 0),
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    TextSize = 13, -- Slightly smaller text like in-game
+                    TextSize = 14, -- Match in-game text size
                     BackgroundColor3 = FromRGB(255, 255, 255),
-                    ZIndex = 4 -- Above keybind item
+                    ZIndex = 4
                 })  NewKeyText:AddToTheme({TextColor3 = "Text"})
 
                 function NewKey:Set(Name, Key)
@@ -2160,7 +2135,7 @@ local Library do
 
                 function NewKey:SetStatus(Bool)
                     if Bool then 
-                        -- Show blue dot and make text fully visible when keybind is active
+                        -- Show blue dot and brighten text when keybind is active
                         NewKeyAccent:Tween(nil, {BackgroundTransparency = 0})
                         NewKeyText:Tween(nil, {TextTransparency = 0})
                     else
@@ -2194,19 +2169,18 @@ local Library do
                 local ContentPadding = Items["Content"].Instance:FindFirstChild("UIPadding")
                 if not ContentPadding then return end
 
-                -- Update padding and size based on visible keybinds
+                -- Update size based on visible keybinds (like in-game mods)
                 if visibleCount > 0 then
                     ContentPadding.PaddingTop = UDimNew(0, 8)
                     ContentPadding.PaddingBottom = UDimNew(0, 8)
-                    -- Set fixed width to prevent stretching, calculate height based on 24px items + padding
-                    Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.Y
-                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 40 + (visibleCount * 28) + 16) -- 24px items + 4px spacing
+                    -- Calculate total height: header (40px) + padding (16px) + items (28px each)
+                    local totalHeight = 40 + 16 + (visibleCount * 28)
+                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, totalHeight)
                 else
-                    ContentPadding.PaddingTop = UDimNew(0, 8) -- Keep some padding even when empty
+                    ContentPadding.PaddingTop = UDimNew(0, 8)
                     ContentPadding.PaddingBottom = UDimNew(0, 8)
-                    -- Set to minimal size when empty but still show backdrop like in-game mods
-                    Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.None
-                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 56) -- Slightly taller when empty to show backdrop
+                    -- Empty state: just header + small padding (like in-game mods)
+                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 56)
                 end
             end
 
@@ -8229,16 +8203,7 @@ local Library do
             end
         })
 
-        Settings:Keybind({
-            Name = "Menu Keybind",
-            Flag = "MenuBind",
-            Default = Enum.KeyCode.RightShift,
-            Callback = function(Toggled)
-                if Toggled then
-                    Window:SetOpen(not Window.IsOpen)
-                end
-            end
-        })
+        -- Menu keybind is handled in MiscSection, not here
     end
 
     Library.CreateSettingsPage = function(self, Window, KeybindList, ModeratorList)
