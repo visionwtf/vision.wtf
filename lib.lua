@@ -1947,7 +1947,7 @@ local Library do
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(0, 0.5),
-                    BackgroundTransparency = 0, -- Solid background like in-game mods panel
+                    BackgroundTransparency = 1, -- Make main frame transparent
                     Position = UDim2New(0, 20, 0.5, -50), -- Positioned higher to avoid moderator panel
                     Size = UDim2New(0, 200, 0, 40), -- Fixed width to prevent stretching
                     BorderSizePixel = 0,
@@ -1958,9 +1958,23 @@ local Library do
 
                 Items["KeybindsList"]:MakeDraggable()
                 
-                Instances:Create("UICorner", {
+                -- Add the dark backdrop that extends below header (like in-game mods)
+                Items["Backdrop"] = Instances:Create("Frame", {
                     Parent = Items["KeybindsList"].Instance,
-                    Name = "\0"
+                    Name = "\0",
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BackgroundTransparency = 0,
+                    Position = UDim2New(0, 0, 0, 0),
+                    Size = UDim2New(1, 0, 1, 0), -- Full size of parent
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(6, 6, 8), -- Very dark backdrop like in-game
+                    ZIndex = 1
+                })
+                
+                Instances:Create("UICorner", {
+                    Parent = Items["Backdrop"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 8)
                 })
                 
                 Items["Top"] = Instances:Create("Frame", {
@@ -1969,8 +1983,15 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Size = UDim2New(1, 0, 0, 40),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(12, 12, 15) -- Slightly lighter than main background
+                    BackgroundColor3 = FromRGB(12, 12, 15), -- Header background
+                    ZIndex = 2 -- Above backdrop
                 })  Items["Top"]:AddToTheme({BackgroundColor3 = "Element"})
+                
+                Instances:Create("UICorner", {
+                    Parent = Items["Top"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 8)
+                })
                 
                 Items["Icon"] = Instances:Create("ImageLabel", {
                     Parent = Items["Top"].Instance,
@@ -1982,7 +2003,7 @@ local Library do
                     Image = "rbxassetid://81598136527047",
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 15, 0.5, 0),
-                    ZIndex = 2,
+                    ZIndex = 3, -- Above header
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -2018,28 +2039,6 @@ local Library do
                     Name = "\0"
                 })
                 
-                Instances:Create("Frame", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2New(0, 1),
-                    Position = UDim2New(0, 0, 1, 0),
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(0, 10, 0, 5),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(31, 31, 36)
-                }):AddToTheme({BackgroundColor3 = "Section Background 2"})
-                
-                Instances:Create("Frame", {
-                    Parent = Items["Top"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2New(1, 1),
-                    Position = UDim2New(1, 0, 1, 0),
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(0, 10, 0, 5),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(31, 31, 36)
-                }):AddToTheme({BackgroundColor3 = "Section Background 2"})
-                
                 Items["Content"] = Instances:Create("Frame", {
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
@@ -2049,7 +2048,8 @@ local Library do
                     Size = UDim2New(1, 0, 0, 0), -- Fixed width, start with 0 height
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.Y,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
+                    BackgroundColor3 = FromRGB(255, 255, 255),
+                    ZIndex = 2 -- Above backdrop
                 })
 
                 Instances:Create("UIListLayout", {
@@ -2093,7 +2093,8 @@ local Library do
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = FromRGB(10, 10, 12), -- Dark solid background matching in-game
-                    Visible = (Key and Key ~= "" and Key ~= "None")
+                    Visible = (Key and Key ~= "" and Key ~= "None"),
+                    ZIndex = 3 -- Above backdrop and content
                 })  NewKey:AddToTheme({BackgroundColor3 = "Element"})
                 
                 -- Add corner radius to keybind background
@@ -2113,7 +2114,8 @@ local Library do
                     Position = UDim2New(0, 10, 0.5, 0), -- Positioned like in-game
                     Size = UDim2New(0, 6, 0, 6),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(0, 162, 255) -- Brighter blue like in-game
+                    BackgroundColor3 = FromRGB(0, 162, 255), -- Brighter blue like in-game
+                    ZIndex = 4 -- Above keybind item
                 })  NewKeyAccent:AddToTheme({BackgroundColor3 = "Accent"})
 
                 Instances:Create("UICorner", {
@@ -2136,7 +2138,8 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextSize = 13, -- Slightly smaller text like in-game
-                    BackgroundColor3 = FromRGB(255, 255, 255)
+                    BackgroundColor3 = FromRGB(255, 255, 255),
+                    ZIndex = 4 -- Above keybind item
                 })  NewKeyText:AddToTheme({TextColor3 = "Text"})
 
                 function NewKey:Set(Name, Key)
@@ -2199,11 +2202,11 @@ local Library do
                     Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.Y
                     Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 40 + (visibleCount * 28) + 16) -- 24px items + 4px spacing
                 else
-                    ContentPadding.PaddingTop = UDimNew(0, 0)
-                    ContentPadding.PaddingBottom = UDimNew(0, 0)
-                    -- Set to minimal size when empty
+                    ContentPadding.PaddingTop = UDimNew(0, 8) -- Keep some padding even when empty
+                    ContentPadding.PaddingBottom = UDimNew(0, 8)
+                    -- Set to minimal size when empty but still show backdrop like in-game mods
                     Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.None
-                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 40) -- Fixed minimal size
+                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 56) -- Slightly taller when empty to show backdrop
                 end
             end
 
@@ -8229,7 +8232,7 @@ local Library do
         Settings:Keybind({
             Name = "Menu Keybind",
             Flag = "MenuBind",
-            Default = nil,
+            Default = Enum.KeyCode.RightShift,
             Callback = function(Toggled)
                 if Toggled then
                     Window:SetOpen(not Window.IsOpen)
@@ -8406,7 +8409,7 @@ local Library do
             MiscSection:Keybind({
                 Name = "Menu Bind",
                 Flag = "MenuBind",
-                Default = nil,
+                Default = Enum.KeyCode.RightShift,
                 Callback = function(Value) end
             })
 
