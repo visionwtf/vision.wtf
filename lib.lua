@@ -1958,11 +1958,7 @@ local Library do
 
                 Items["KeybindsList"]:MakeDraggable()
                 
-                Instances:Create("UICorner", {
-                    Parent = Items["KeybindsList"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 8)
-                })
+                -- Remove the main UICorner since we're handling corners separately now
 
                 -- Header area (solid background for header)
                 Items["Top"] = Instances:Create("Frame", {
@@ -2039,7 +2035,7 @@ local Library do
                 Items["ContentBackdrop"] = Instances:Create("Frame", {
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
-                    BackgroundTransparency = 0.5, -- Increased opacity to make it more visible
+                    BackgroundTransparency = 0.7, -- Increased transparency to make opacity more visible
                     Position = UDim2New(0, 0, 0, 40),
                     Size = UDim2New(1, 0, 0, 16),
                     BackgroundColor3 = FromRGB(20, 20, 24), -- Same color as header
@@ -2047,7 +2043,7 @@ local Library do
                     ZIndex = 1
                 })
                 
-                -- Round bottom corners only
+                -- Round bottom corners only for content backdrop
                 Instances:Create("UICorner", {
                     Parent = Items["ContentBackdrop"].Instance,
                     Name = "\0",
@@ -2061,7 +2057,7 @@ local Library do
                     Position = UDim2New(0, 0, 0, 0),
                     Size = UDim2New(1, 0, 0, 8),
                     BackgroundColor3 = FromRGB(20, 20, 24), -- Same color as header
-                    BackgroundTransparency = 0.5, -- Match backdrop transparency
+                    BackgroundTransparency = 0.7, -- Match backdrop transparency
                     BorderSizePixel = 0,
                     ZIndex = 2
                 })
