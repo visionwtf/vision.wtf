@@ -36,6 +36,7 @@ local Library do
     local Vector3New = Vector3.new
 
     local MathClamp = math.clamp
+    local MathMax = math.max
     local MathFloor = math.floor
     local MathAbs = math.abs
     local MathSin = math.sin
@@ -466,8 +467,15 @@ local Library do
                 local ScreenSize = Gui.Parent.AbsoluteSize
                 local GuiSize = Gui.AbsoluteSize
         
-                NewX = MathClamp(NewX, 0, ScreenSize.X - GuiSize.X)
-                NewY = MathClamp(NewY, 0, ScreenSize.Y - GuiSize.Y)
+                -- Safety check to prevent clamp error
+                if GuiSize.X > 0 and GuiSize.Y > 0 and ScreenSize.X > GuiSize.X and ScreenSize.Y > GuiSize.Y then
+                    NewX = MathClamp(NewX, 0, ScreenSize.X - GuiSize.X)
+                    NewY = MathClamp(NewY, 0, ScreenSize.Y - GuiSize.Y)
+                else
+                    -- Fallback positioning if sizes are invalid
+                    NewX = MathMax(0, NewX)
+                    NewY = MathMax(0, NewY)
+                end
         
                 self:Tween(TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(StartPosition.X.Scale, NewX, StartPosition.Y.Scale, NewY)})
             end
@@ -1941,9 +1949,9 @@ local Library do
                     AnchorPoint = Vector2New(0, 0.5),
                     BackgroundTransparency = 0, -- Solid background like in-game mods panel
                     Position = UDim2New(0, 20, 0.5, -50), -- Positioned higher to avoid moderator panel
-                    Size = UDim2New(0, 100, 0, 40), -- Start with minimal size (just header)
+                    Size = UDim2New(0, 200, 0, 40), -- Fixed width to prevent stretching
                     BorderSizePixel = 0,
-                    AutomaticSize = Enum.AutomaticSize.X, -- Only auto-size width, not height
+                    AutomaticSize = Enum.AutomaticSize.None, -- No automatic sizing initially
                     BackgroundColor3 = FromRGB(12, 12, 14), -- Dark solid background like in-game mods
                     Active = true
                 })  Items["KeybindsList"]:AddToTheme({BackgroundColor3 = "Background"})
@@ -2038,7 +2046,7 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 0, 0, 40),
-                    Size = UDim2New(1, 12, 0, 0), -- Start with 0 height
+                    Size = UDim2New(1, 0, 0, 0), -- Fixed width, start with 0 height
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundColor3 = FromRGB(255, 255, 255)
@@ -2193,15 +2201,35 @@ local Library do
                 if visibleCount > 0 then
                     ContentPadding.PaddingTop = UDimNew(0, 8)
                     ContentPadding.PaddingBottom = UDimNew(0, 8)
-                    -- Let AutomaticSize handle the height
-                    Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.XY
+                    -- Set fixed width to prevent stretching
+                    Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.Y
+                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 40 + (visibleCount * 24) + 16) -- Fixed width, calculated height
                 else
                     ContentPadding.PaddingTop = UDimNew(0, 0)
                     ContentPadding.PaddingBottom = UDimNew(0, 0)
                     -- Set to minimal size when empty
-                    Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.X
-                    Items["KeybindsList"].Instance.Size = UDim2New(0, 100, 0, 40)
+                    Items["KeybindsList"].Instance.AutomaticSize = Enum.AutomaticSize.None
+                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 40) -- Fixed minimal size
                 end
+            end
+
+            -- Register any pending keybinds that were created before KeybindList was available
+            if Library.PendingKeybinds then
+                for _, keybind in pairs(Library.PendingKeybinds) do
+                    if keybind and keybind.Name then
+                        pcall(function()
+                            local keyText = "None"
+                            if keybind.Key and keybind.Key ~= Enum.KeyCode.Unknown then
+                                keyText = Keys[tostring(keybind.Key)] or tostring(keybind.Key):gsub("Enum.KeyCode.", "")
+                            end
+                            local item = KeybindList:Add(keybind.Name, keyText)
+                            if item then
+                                item:SetStatus(keybind.Toggled or false)
+                            end
+                        end)
+                    end
+                end
+                Library.PendingKeybinds = nil -- Clear pending list
             end
 
             return KeybindList
@@ -5631,8 +5659,14 @@ local Library do
                 local KeyListItem 
                 if Library.KeyList and Library.KeyList.Add then 
                     pcall(function()
-                        KeyListItem = Library.KeyList:Add("", "")
+                        KeyListItem = Library.KeyList:Add(Keybind.Name, "None")
                     end)
+                else
+                    -- Store keybind for later registration when KeyList is available
+                    if not Library.PendingKeybinds then
+                        Library.PendingKeybinds = {}
+                    end
+                    table.insert(Library.PendingKeybinds, Keybind)
                 end
                 
                 local function UpdateKeybind()
@@ -5657,6 +5691,9 @@ local Library do
                         end)
                     end
                 end
+                
+                -- Store KeyListItem reference for config loading
+                Keybind.KeyListItem = KeyListItem
                 
                 -- Keybind input handling
                 KeybindButton:Connect("MouseButton1Click", function()
@@ -5735,6 +5772,30 @@ local Library do
                 
                 -- Add to section elements for cleanup
                 TableInsert(Toggle.Section.Elements, Keybind)
+                
+                -- Register SetFlags function for config loading
+                Library.SetFlags[Keybind.Flag] = function(Value)
+                    if type(Value) == "table" and Value.Key then
+                        Keybind.Key = Value.Key
+                        Keybind.Mode = Value.Mode or "Toggle"
+                        Keybind.Toggled = Value.Toggled or false
+                    else
+                        Keybind.Key = Value
+                    end
+                    UpdateKeybind()
+                    
+                    -- Also update KeyListItem if it exists
+                    if Keybind.KeyListItem and Keybind.KeyListItem.Set then
+                        pcall(function()
+                            local keyText = "None"
+                            if Keybind.Key and Keybind.Key ~= Enum.KeyCode.Unknown then
+                                keyText = Keys[tostring(Keybind.Key)] or tostring(Keybind.Key):gsub("Enum.KeyCode.", "")
+                            end
+                            Keybind.KeyListItem:Set(Keybind.Name, keyText)
+                            Keybind.KeyListItem:SetStatus(Keybind.Toggled)
+                        end)
+                    end
+                end
                 
                 return {
                     Set = function(NewKey)
