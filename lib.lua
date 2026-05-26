@@ -3734,7 +3734,7 @@ local Library do
             end
 
             Library:Connect(UserInputService.InputBegan, function(Input)
-                local menuKey = Library.Flags["MenuKeybind"] and Library.Flags["MenuKeybind"].Key or Library.MenuKeybind
+                local menuKey = Library.Flags["MenuBind"] and Library.Flags["MenuBind"].Key or Library.MenuKeybind
                 if tostring(Input.KeyCode) == menuKey or tostring(Input.UserInputType) == menuKey then
                     Window:SetOpen(not Window.IsOpen)
                 end
@@ -3907,29 +3907,55 @@ local Library do
                 Page.Active = Bool
 
                 if Page.Active then 
+                    -- Ensure all other pages are deactivated first
+                    for Index, Value in Page.Window.Pages do 
+                        if Value ~= Page and Value.Active then 
+                            Value:SetActive(false)
+                        end
+                    end
+                    
                     Items["Inactive"].Instance.BackgroundTransparency = 0
                     Items["Page"].Instance.Visible = true
-                    Items["Page"]:Tween(TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0)})
+                    
+                    -- Smooth slide-in animation from right
+                    Items["Page"].Instance.Position = UDim2New(1, 0, 0, 0)
+                    Items["Page"]:Tween(TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0)})
 
+                    -- Animate elements in with stagger
                     for Index, Value in Page.Sections do 
                         task.spawn(function()
+                            task.wait(Index * 0.02) -- Small stagger delay
                             Value:TweenElements(true)
                         end)
                     end
                 else
                     Items["Inactive"].Instance.BackgroundTransparency = 1
-                    Items["Page"]:Tween(TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, -Items["Page"].Instance.AbsoluteSize.Y)})
+                    
+                    -- Smooth slide-out animation to left (not outside the menu)
+                    local slideTween = Items["Page"]:Tween(TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(-1, 0, 0, 0)})
 
-                    task.wait(0.5)
-
-                    if not Page.Active then 
-                        for Index, Value in Page.Sections do 
-                            task.spawn(function()
+                    -- Hide elements immediately to prevent flying outside
+                    for Index, Value in Page.Sections do 
+                        task.spawn(function()
                             Value:TweenElements(false, true)
-                            end)
-                        end
+                        end)
+                    end
 
-                        Items["Page"].Instance.Visible = false
+                    -- Hide page after animation completes
+                    if slideTween and slideTween.Tween then
+                        slideTween.Tween.Completed:Connect(function()
+                            if not Page.Active then
+                                Items["Page"].Instance.Visible = false
+                            end
+                        end)
+                    else
+                        -- Fallback
+                        task.spawn(function()
+                            task.wait(0.25)
+                            if not Page.Active then
+                                Items["Page"].Instance.Visible = false
+                            end
+                        end)
                     end
                 end
             end
@@ -4967,14 +4993,24 @@ local Library do
                 Section.IsActive = not Section.IsActive
 
                 if not Section.IsActive then 
-                    -- Smooth collapse animation
-                    Items["Background"]:Tween(TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2New(1, -2, 0, 0)})
+                    -- Smooth collapse animation - animate content and background together
                     Items["Content"]:FadeItem(false, 0.2)
+                    local backgroundTween = Items["Background"]:Tween(TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2New(1, -2, 0, 0)})
                     
-                    -- Wait for animation then hide
-                    task.wait(0.3)
-                    Items["Content"].Instance.Visible = false
-                    Items["Background"].Instance.Visible = false
+                    -- Hide elements after animation completes
+                    if backgroundTween and backgroundTween.Tween then
+                        backgroundTween.Tween.Completed:Connect(function()
+                            Items["Content"].Instance.Visible = false
+                            Items["Background"].Instance.Visible = false
+                        end)
+                    else
+                        -- Fallback if tween fails
+                        task.spawn(function()
+                            task.wait(0.3)
+                            Items["Content"].Instance.Visible = false
+                            Items["Background"].Instance.Visible = false
+                        end)
+                    end
                     
                     Items["Gradient"].Instance.Enabled = false
                     Items["Toggle"]:ChangeItemTheme({BackgroundColor3 = "Element"})
@@ -4985,7 +5021,7 @@ local Library do
                     Items["Content"].Instance.Visible = true
                     Items["Background"].Instance.Visible = true
                     
-                    -- Smooth expand animation
+                    -- Smooth expand animation - animate content and background together
                     Items["Background"]:Tween(TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2New(1, -2, 1, -56)})
                     Items["Content"]:FadeItem(true, 0.2)
 
@@ -6732,69 +6768,19 @@ local Library do
             }
 
             local Items = { } do
-                Items["Label"] = Instances:Create("Frame", {
+                -- Simplified keybind UI - just a clean button on the right
+                Items["Container"] = Instances:Create("Frame", {
                     Parent = Keybind.Section.Items["Content"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 20),
+                    Size = UDim2New(1, 0, 0, 35),
                     BorderColor3 = FromRGB(0, 0, 0),
                     BorderSizePixel = 0,
-                    AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
-                
-                Items["SubElements"] = Instances:Create("Frame", {
-                    Parent = Items["Label"].Instance,
-                    Name = "\0",
-                    Size = UDim2New(1, 0, 0, 30),
-                    Position = UDim2New(0, 0, 0, 30),
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    ZIndex = 2,
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(27, 26, 29)
-                })  Items["SubElements"]:AddToTheme({BackgroundColor3 = "Element"})
-                
-                Instances:Create("UICorner", {
-                    Parent = Items["SubElements"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 5)
-                })
-                
-                Instances:Create("UIListLayout", {
-                    Parent = Items["SubElements"].Instance,
-                    Name = "\0",
-                    VerticalAlignment = Enum.VerticalAlignment.Center,
-                    FillDirection = Enum.FillDirection.Horizontal,
-                    Padding = UDimNew(0, 5),
-                    SortOrder = Enum.SortOrder.LayoutOrder
-                })
-                
-                Instances:Create("UIPadding", {
-                    Parent = Items["SubElements"].Instance,
-                    Name = "\0",
-                    PaddingLeft = UDimNew(0, 6)
-                })
-                
-                Items["KeyButton"] = Instances:Create("TextButton", {
-                    Parent = Items["SubElements"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = FromRGB(240, 240, 240),
-                    TextTransparency = 0.30000001192092896,
-                    Text = "MouseButton2",
-                    AutoButtonColor = false,
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    SelectionOrder = 2,
-                    BorderSizePixel = 0,
-                    ZIndex = 2,
-                    TextSize = 14,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                })  Items["KeyButton"]:AddToTheme({TextColor3 = "Text"})
                 
                 Items["Text"] = Instances:Create("TextLabel", {
-                    Parent = Items["Label"].Instance,
+                    Parent = Items["Container"].Instance,
                     Name = "\0",
                     FontFace = Library.Font,
                     TextColor3 = FromRGB(240, 240, 240),
@@ -6804,58 +6790,86 @@ local Library do
                     Size = UDim2New(0, 0, 0, 15),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 0, 0, 5),
+                    Position = UDim2New(0, 0, 0.5, -7),
                     BorderColor3 = FromRGB(0, 0, 0),
                     ZIndex = 2,
                     TextSize = 14,
+                    TextXAlignment = Enum.TextXAlignment.Left,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
                 
-                Items["Modes"] = Instances:Create("Frame", {
-                    Parent = Items["Label"].Instance,
+                -- Clean keybind button on the right
+                Items["KeyButton"] = Instances:Create("TextButton", {
+                    Parent = Items["Container"].Instance,
                     Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(240, 240, 240),
+                    TextTransparency = 0.30000001192092896,
+                    Text = "None",
+                    AutoButtonColor = false,
                     BorderColor3 = FromRGB(0, 0, 0),
-                    AnchorPoint = Vector2New(1, 0),
-                    Position = UDim2New(1, 0, 0, 0),
-                    Size = UDim2New(0, 150, 0, 22),
-                    ZIndex = 2,
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(27, 26, 29)
-                })  Items["Modes"]:AddToTheme({BackgroundColor3 = "Element"})
-                
-                Instances:Create("UICorner", {
-                    Parent = Items["Modes"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 5)
-                })
-                
-                Items["Background"] = Instances:Create("Frame", {
-                    Parent = Items["Modes"].Instance,
-                    Name = "\0",
-                    Size = UDim2New(0.35, 0, 1, 0),
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    ZIndex = 2,
-                    BorderSizePixel = 0,
+                    Size = UDim2New(0, 80, 0, 25),
+                    AnchorPoint = Vector2New(1, 0.5),
+                    Position = UDim2New(1, 0, 0.5, 0),
                     BackgroundTransparency = 0,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                })  --Items["Background"]:AddToTheme({BackgroundColor3 = "Accent"})
+                    SelectionOrder = 2,
+                    BorderSizePixel = 0,
+                    ZIndex = 2,
+                    TextSize = 12,
+                    BackgroundColor3 = FromRGB(27, 26, 29)
+                })  
+                Items["KeyButton"]:AddToTheme({TextColor3 = "Text", BackgroundColor3 = "Element"})
                 
                 Instances:Create("UICorner", {
-                    Parent = Items["Background"].Instance,
+                    Parent = Items["KeyButton"].Instance,
                     Name = "\0",
-                    CornerRadius = UDimNew(0, 5)
+                    CornerRadius = UDimNew(0, 4)
                 })
+            end
+
+            function Keybind:RefreshPosition(Bool)
+                -- Simplified positioning for new design
+                if Bool then 
+                    Items["Container"]:Tween(TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0)})
+                else
+                    Items["Container"].Instance.Position = UDim2New(0, 30, 0, 0)
+                end
+            end
+
+            function Keybind:SetMode(Mode)
+                Keybind.ModeSelected = Mode or "Toggle"
                 
-                Instances:Create("UIGradient", {
-                    Parent = Items["Background"].Instance,
-                    Name = "\0",
-                    Rotation = -115,
-                    Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(166, 166, 166))}
-                }):AddToTheme({Color = function()
-                    return RGBSequence{RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.AccentGradient)}
-                end})
-                
-                -- Mode selector removed - defaulting to Toggle mode only              
+                Library.Flags[Keybind.Flag] = {
+                    Mode = Keybind.ModeSelected,
+                    Key = Keybind.Key,
+                    Toggled = Keybind.Toggled
+                }
+
+                if Data.Callback then 
+                    Library:SafeCall(Data.Callback, Keybind.Toggled)
+                end
+            end
+
+            function Keybind:Press(Bool)
+                if Keybind.ModeSelected == "Hold" then
+                    Keybind.Toggled = Bool
+                else
+                    Keybind.Toggled = not Keybind.Toggled
+                end
+
+                Library.Flags[Keybind.Flag] = {
+                    Mode = Keybind.ModeSelected or "Toggle",
+                    Key = Keybind.Key,
+                    Toggled = Keybind.Toggled
+                }
+
+                if Data.Callback then 
+                    Library:SafeCall(Data.Callback, Keybind.Toggled)
+                end
+            end
+
+            function Keybind:Get()
+                return Keybind.Key, Keybind.ModeSelected or "Toggle", Keybind.Toggled
             end
 
             --Keybind.Section.Items["Fade"].Instance.Size = UDim2New(1, 0, 0, Keybind.Section.Items["Content"].Instance.AbsoluteSize.X - 180)
@@ -8066,7 +8080,7 @@ local Library do
                 Default = true,
                 Callback = function(Value)
                     if ModeratorList then
-                        ModeratorList:SetVisible(Value)
+                        ModeratorList:SetVisibility(Value)
                     end
                 end
             })
@@ -8077,7 +8091,7 @@ local Library do
                 Default = true,
                 Callback = function(Value)
                     if KeybindList then
-                        KeybindList:SetVisible(Value)
+                        KeybindList:SetVisibility(Value)
                     end
                 end
             })
