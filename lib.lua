@@ -2086,11 +2086,11 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
-                    BackgroundTransparency = 1, -- Start transparent
+                    BackgroundTransparency = 0, -- Solid background like in-game mods
                     Size = UDim2New(1, 0, 0, 20),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = FromRGB(20, 20, 22), -- Darker background for active keybinds
+                    BackgroundColor3 = FromRGB(16, 16, 18), -- Dark solid background
                     Visible = (Key and Key ~= "" and Key ~= "None")
                 })  NewKey:AddToTheme({BackgroundColor3 = "Element"})
                 
@@ -2101,27 +2101,19 @@ local Library do
                     CornerRadius = UDimNew(0, 4)
                 })
                 
+                -- Blue dot indicator for active keybinds
                 local NewKeyAccent = Instances:Create("Frame", {
                     Parent = NewKey.Instance,
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(0, 0.5),
-                    BackgroundTransparency = 1,
-                    Position = UDim2New(0, 0, 0.5, 0),
+                    BackgroundTransparency = 0, -- Make visible for active keybinds
+                    Position = UDim2New(0, 8, 0.5, 0),
                     Size = UDim2New(0, 6, 0, 6),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                })
+                    BackgroundColor3 = FromRGB(0, 116, 224) -- Blue accent color
+                })  NewKeyAccent:AddToTheme({BackgroundColor3 = "Accent"})
 
-                Instances:Create("UIGradient",{
-                    Parent = NewKeyAccent.Instance,
-                    Name = "\0",
-                    Rotation = -115,
-                    Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(143, 143, 143))}
-                }):AddToTheme({Color = function()
-                    return RGBSequence{RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.AccentGradient)}
-                end})
-                
                 Instances:Create("UICorner", {
                     Parent = NewKeyAccent.Instance,
                     Name = "\0"
@@ -2134,13 +2126,13 @@ local Library do
                     TextColor3 = FromRGB(255, 255, 255),
                     TextTransparency = 0.30000001192092896,
                     Text = (Key and Key ~= "" and Key ~= "None") and (Name .. " ["..Key.."]") or "",
-                    Size = UDim2New(0, 0, 0, 15),
+                    Size = UDim2New(1, -20, 0, 15), -- Leave space for blue dot
                     AnchorPoint = Vector2New(0, 0.5),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 0, 0.5, 0),
+                    Position = UDim2New(0, 18, 0.5, 0), -- Offset for blue dot
                     BorderColor3 = FromRGB(0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.X,
+                    TextXAlignment = Enum.TextXAlignment.Left,
                     TextSize = 14,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  NewKeyText:AddToTheme({TextColor3 = "Text"})
@@ -2163,13 +2155,13 @@ local Library do
 
                 function NewKey:SetStatus(Bool)
                     if Bool then 
-                        NewKeyText:Tween(nil, {Position = UDim2New(0, 15, 0.5, 0), TextTransparency = 0})
+                        -- Show blue dot and make text fully visible when keybind is active
                         NewKeyAccent:Tween(nil, {BackgroundTransparency = 0})
-                        -- Background stays the same - only dot appears/disappears
+                        NewKeyText:Tween(nil, {TextTransparency = 0})
                     else
-                        NewKeyText:Tween(nil, {Position = UDim2New(0, 0, 0.5, 0), TextTransparency = 0.3})
+                        -- Hide blue dot and dim text when keybind is inactive
                         NewKeyAccent:Tween(nil, {BackgroundTransparency = 1})
-                        -- Background stays the same - only dot disappears
+                        NewKeyText:Tween(nil, {TextTransparency = 0.3})
                     end
                 end
 
@@ -5205,12 +5197,13 @@ local Library do
                     TextColor3 = FromRGB(240, 240, 240),
                     TextTransparency = 0.30000001192092896,
                     Text = Toggle.Name,
-                    AutomaticSize = Enum.AutomaticSize.X,
-                    Size = UDim2New(0, 0, 0, 15),
+                    AutomaticSize = Enum.AutomaticSize.None, -- Changed to None to allow fixed width
+                    Size = UDim2New(1, -80, 0, 15), -- Leave 80px space for keybind button
                     Position = UDim2New(0, 24, 0, 0),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
                     TextXAlignment = Enum.TextXAlignment.Left,
+                    TextTruncate = Enum.TextTruncate.AtEnd, -- Truncate long text with ...
                     BorderColor3 = FromRGB(0, 0, 0),
                     ZIndex = 2,
                     TextSize = 14,
