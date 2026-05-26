@@ -1947,20 +1947,40 @@ local Library do
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(0, 0.5),
-                    BackgroundTransparency = 0, -- Solid background like in-game mods
+                    BackgroundTransparency = 0, -- Solid background for header
                     Position = UDim2New(0, 20, 0.5, -50),
                     Size = UDim2New(0, 200, 0, 40), -- Start with header size
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.None,
-                    BackgroundColor3 = FromRGB(16, 16, 20), -- Match in-game mods exactly
+                    BackgroundColor3 = FromRGB(16, 16, 20), -- Header background
                     Active = true
                 })  Items["KeybindsList"]:AddToTheme({BackgroundColor3 = "Background"})
 
                 Items["KeybindsList"]:MakeDraggable()
                 
-                -- Single corner radius for entire panel
+                -- Header corner radius (top only)
                 Instances:Create("UICorner", {
                     Parent = Items["KeybindsList"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 8)
+                })
+                
+                -- Add the darker backdrop area below header (like in-game mods)
+                Items["Backdrop"] = Instances:Create("Frame", {
+                    Parent = Items["KeybindsList"].Instance,
+                    Name = "\0",
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BackgroundTransparency = 0,
+                    Position = UDim2New(0, 0, 1, 0), -- Below header
+                    Size = UDim2New(1, 0, 0, 16), -- Start small, will grow with content
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(10, 10, 14), -- Darker backdrop like in-game
+                    ZIndex = 1
+                })
+                
+                -- Backdrop corner radius (bottom only)
+                Instances:Create("UICorner", {
+                    Parent = Items["Backdrop"].Instance,
                     Name = "\0",
                     CornerRadius = UDimNew(0, 8)
                 })
@@ -2022,11 +2042,11 @@ local Library do
                 })
                 
                 Items["Content"] = Instances:Create("Frame", {
-                    Parent = Items["KeybindsList"].Instance,
+                    Parent = Items["Backdrop"].Instance, -- Parent to backdrop instead
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
-                    BackgroundTransparency = 1, -- Transparent, part of main background
-                    Position = UDim2New(0, 0, 0, 40),
+                    BackgroundTransparency = 1, -- Transparent
+                    Position = UDim2New(0, 0, 0, 0), -- Start at top of backdrop
                     Size = UDim2New(1, 0, 0, 0),
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.Y,
@@ -2102,8 +2122,8 @@ local Library do
                     Parent = NewKey.Instance,
                     Name = "\0",
                     FontFace = Library.Font,
-                    TextColor3 = FromRGB(180, 180, 180), -- Match in-game text color
-                    TextTransparency = 0.2, -- Slight transparency like in-game
+                    TextColor3 = FromRGB(220, 220, 220), -- Brighter text for better visibility
+                    TextTransparency = 0, -- No transparency for better visibility
                     Text = (Key and Key ~= "" and Key ~= "None") and (Name .. " [" .. Key .. "]") or "",
                     Size = UDim2New(1, -30, 1, 0), -- Leave space for blue dot
                     AnchorPoint = Vector2New(0, 0.5),
@@ -2156,6 +2176,9 @@ local Library do
                 if not Items["KeybindsList"] or not Items["KeybindsList"].Instance then 
                     return 
                 end
+                if not Items["Backdrop"] or not Items["Backdrop"].Instance then 
+                    return 
+                end
                 
                 -- Count visible keybinds
                 local visibleCount = 0
@@ -2173,14 +2196,17 @@ local Library do
                 if visibleCount > 0 then
                     ContentPadding.PaddingTop = UDimNew(0, 8)
                     ContentPadding.PaddingBottom = UDimNew(0, 8)
-                    -- Calculate total height: header (40px) + padding (16px) + items (28px each)
-                    local totalHeight = 40 + 16 + (visibleCount * 28)
-                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, totalHeight)
+                    -- Calculate backdrop height: padding (16px) + items (28px each)
+                    local backdropHeight = 16 + (visibleCount * 28)
+                    Items["Backdrop"].Instance.Size = UDim2New(1, 0, 0, backdropHeight)
+                    -- Header stays at 40px, total = header + backdrop
+                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 40 + backdropHeight)
                 else
                     ContentPadding.PaddingTop = UDimNew(0, 8)
                     ContentPadding.PaddingBottom = UDimNew(0, 8)
-                    -- Empty state: just header + small padding (like in-game mods)
-                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 56)
+                    -- Empty state: small backdrop (like in-game mods)
+                    Items["Backdrop"].Instance.Size = UDim2New(1, 0, 0, 16)
+                    Items["KeybindsList"].Instance.Size = UDim2New(0, 200, 0, 56) -- 40 + 16
                 end
             end
 
@@ -3958,7 +3984,7 @@ local Library do
                     Instances:Create("UIListLayout", {
                         Parent = Page.ColumnsData[Index].Instance,
                         Name = "\0",
-                        Padding = UDimNew(0, 15),
+                        Padding = UDimNew(0, 20), -- Increased from 15 to 20 for better spacing
                         SortOrder = Enum.SortOrder.LayoutOrder
                     })
                 end
