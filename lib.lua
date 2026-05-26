@@ -5293,15 +5293,15 @@ local Library do
                     })                    
 
                     SettingsItem["SettingsIcon"] = Instances:Create("ImageLabel", {
-                        Parent = Items["Text"].Instance,
+                        Parent = Items["Toggle"].Instance,
                         Name = "\0",
                         ImageColor3 = FromRGB(141, 141, 150),
                         BorderColor3 = FromRGB(0, 0, 0),
                         Size = UDim2New(0, 14, 0, 14),
-                        AnchorPoint = Vector2New(0, 0.5),
+                        AnchorPoint = Vector2New(1, 0.5),
                         Image = "rbxassetid://8622237899",
                         BackgroundTransparency = 1,
-                        Position = UDim2New(1, 6, 0.5, 1),
+                        Position = UDim2New(1, -2, 0.5, 0), -- Position at the very right edge
                         ZIndex = 2,
                         BorderSizePixel = 0,
                         BackgroundColor3 = FromRGB(255, 255, 255)
@@ -5482,6 +5482,10 @@ local Library do
                             RenderStepped:Disconnect()
                             RenderStepped = nil
                         end
+                        
+                        -- Hide panel immediately when closing
+                        SettingsItem["Settings"].Instance.Visible = false
+                        SettingsItem["Settings"].Instance.Parent = Library.UnusedHolder.Instance
                     end
     
                     local Descendants = SettingsItem["Settings"].Instance:GetDescendants()
@@ -5509,20 +5513,11 @@ local Library do
                         end
                     end
                     
-                    -- Check if NewTween exists before accessing its properties
-                    if NewTween and NewTween.Tween then
-                        NewTween.Tween.Completed:Connect(function()
-                            Debounce = false 
-                            SettingsItem["Settings"].Instance.Visible = Settings.IsOpen
-                            task.wait(0.2)
-                            SettingsItem["Settings"].Instance.Parent = not Settings.IsOpen and Library.UnusedHolder.Instance or Library.Holder.Instance
-                        end)
-                    else
-                        -- Fallback if no tween was created
-                        Debounce = false 
-                        SettingsItem["Settings"].Instance.Visible = Settings.IsOpen
-                        SettingsItem["Settings"].Instance.Parent = not Settings.IsOpen and Library.UnusedHolder.Instance or Library.Holder.Instance
-                    end
+                    -- Always reset debounce after a short delay
+                    task.spawn(function()
+                        task.wait(0.3)
+                        Debounce = false
+                    end)
                 end
 
                 SettingsItem["Button"]:Connect("MouseButton1Down", function()
@@ -5591,9 +5586,13 @@ local Library do
                     Section = Toggle.Section,
 
                     Flag = Data.Flag or Data.flag or Library:NextFlag(),
-                    Default = Data.Default or Data.default or Enum.KeyCode.E,
+                    Default = Data.Default or Data.default or nil, -- Changed to nil instead of E
                     Callback = Data.Callback or Data.callback or function() end,
-                    Mode = Data.Mode or Data.mode or "Toggle"
+                    Mode = Data.Mode or Data.mode or "Toggle",
+                    
+                    Key = nil,
+                    Toggled = false,
+                    Picking = false
                 }
 
                 -- Create keybind button directly on the toggle, positioned to the right
@@ -5606,14 +5605,14 @@ local Library do
                     Text = "None",
                     AutoButtonColor = false,
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(0, 60, 0, 18),
-                    AnchorPoint = Vector2New(1, 0),
-                    Position = UDim2New(1, 0, 0, 0),
+                    Size = UDim2New(0, 50, 0, 16), -- Made slimmer
+                    AnchorPoint = Vector2New(1, 0.5),
+                    Position = UDim2New(1, -18, 0.5, 0), -- Account for settings icon
                     BackgroundTransparency = 0,
                     SelectionOrder = 2,
                     BorderSizePixel = 0,
                     ZIndex = 2,
-                    TextSize = 12,
+                    TextSize = 11, -- Smaller text
                     BackgroundColor3 = FromRGB(27, 26, 29)
                 })
                 KeybindButton:AddToTheme({TextColor3 = "Text", BackgroundColor3 = "Element"})
@@ -5624,51 +5623,97 @@ local Library do
                     CornerRadius = UDimNew(0, 4)
                 })
 
-                -- Keybind functionality
-                local Picking = false
-                local Key = Keybind.Default
+                -- Initialize keybind
+                Keybind.Key = Keybind.Default
                 
                 local function UpdateKeybind()
-                    if Key and Key ~= Enum.KeyCode.Unknown then
-                        KeybindButton.Instance.Text = Keys[tostring(Key)] or tostring(Key):gsub("Enum.KeyCode.", "")
+                    if Keybind.Key and Keybind.Key ~= Enum.KeyCode.Unknown then
+                        KeybindButton.Instance.Text = Keys[tostring(Keybind.Key)] or tostring(Keybind.Key):gsub("Enum.KeyCode.", "")
                     else
                         KeybindButton.Instance.Text = "None"
                     end
                     
                     Library.Flags[Keybind.Flag] = {
                         Mode = Keybind.Mode,
-                        Key = Key,
-                        Toggled = false
+                        Key = Keybind.Key,
+                        Toggled = Keybind.Toggled
                     }
                 end
                 
+                -- Keybind input handling
                 KeybindButton:Connect("MouseButton1Click", function()
-                    if Picking then return end
+                    if Keybind.Picking then return end
                     
-                    Picking = true
+                    Keybind.Picking = true
                     KeybindButton.Instance.Text = "..."
                     
                     local Connection
                     Connection = UserInputService.InputBegan:Connect(function(Input)
                         if Input.UserInputType == Enum.UserInputType.Keyboard then
-                            Key = Input.KeyCode
+                            Keybind.Key = Input.KeyCode
                             UpdateKeybind()
-                            Picking = false
+                            Keybind.Picking = false
                             Connection:Disconnect()
                         end
                     end)
                 end)
                 
+                -- Key press detection for toggle functionality
+                Library:Connect(UserInputService.InputBegan, function(Input)
+                    if Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode == Keybind.Key then
+                        if Keybind.Mode == "Hold" then
+                            Keybind.Toggled = true
+                        else -- Toggle mode
+                            Keybind.Toggled = not Keybind.Toggled
+                        end
+                        
+                        Library.Flags[Keybind.Flag] = {
+                            Mode = Keybind.Mode,
+                            Key = Keybind.Key,
+                            Toggled = Keybind.Toggled
+                        }
+                        
+                        if Keybind.Callback then
+                            Library:SafeCall(Keybind.Callback, Keybind.Toggled)
+                        end
+                    end
+                end)
+                
+                -- Key release detection for hold mode
+                if Keybind.Mode == "Hold" then
+                    Library:Connect(UserInputService.InputEnded, function(Input)
+                        if Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode == Keybind.Key then
+                            Keybind.Toggled = false
+                            
+                            Library.Flags[Keybind.Flag] = {
+                                Mode = Keybind.Mode,
+                                Key = Keybind.Key,
+                                Toggled = Keybind.Toggled
+                            }
+                            
+                            if Keybind.Callback then
+                                Library:SafeCall(Keybind.Callback, Keybind.Toggled)
+                            end
+                        end
+                    end)
+                end
+                
                 -- Initialize
                 UpdateKeybind()
                 
+                -- Add to section elements for cleanup
+                TableInsert(Toggle.Section.Elements, Keybind)
+                
                 return {
                     Set = function(NewKey)
-                        Key = NewKey
+                        Keybind.Key = NewKey
                         UpdateKeybind()
                     end,
                     Get = function()
-                        return Key
+                        return Keybind.Key
+                    end,
+                    SetMode = function(Mode)
+                        Keybind.Mode = Mode or "Toggle"
                     end
                 }
             end
