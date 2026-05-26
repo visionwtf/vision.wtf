@@ -2640,6 +2640,49 @@ local Library do
                     BackgroundColor3 = FromRGB(27, 25, 29)
                 })  Items["LeftTabs"]:AddToTheme({BackgroundColor3 = "Background"})
 
+                -- Add missing tab containers that are referenced in the code
+                Items["RightTabs"] = Instances:Create("Frame", {
+                    Parent = Items["MainFrame"].Instance,
+                    Name = "\0",
+                    Visible = false,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    AnchorPoint = Vector2New(0, 0),
+                    BackgroundTransparency = 0.15,
+                    Position = UDim2New(1, -225, 0, 0),
+                    Size = UDim2New(0, 225, 1, 0),
+                    ZIndex = 2,
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(27, 25, 29)
+                })  Items["RightTabs"]:AddToTheme({BackgroundColor3 = "Background"})
+
+                Items["TopTabs"] = Instances:Create("Frame", {
+                    Parent = Items["MainFrame"].Instance,
+                    Name = "\0",
+                    Visible = false,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    AnchorPoint = Vector2New(0, 1),
+                    BackgroundTransparency = 0.15,
+                    Position = UDim2New(0, 0, 0, 0),
+                    Size = UDim2New(1, 0, 0, 225),
+                    ZIndex = 2,
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(27, 25, 29)
+                })  Items["TopTabs"]:AddToTheme({BackgroundColor3 = "Background"})
+
+                Items["BottomTabs"] = Instances:Create("Frame", {
+                    Parent = Items["MainFrame"].Instance,
+                    Name = "\0",
+                    Visible = false,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    AnchorPoint = Vector2New(0, 0),
+                    BackgroundTransparency = 0.15,
+                    Position = UDim2New(0, 0, 1, -225),
+                    Size = UDim2New(1, 0, 0, 225),
+                    ZIndex = 2,
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(27, 25, 29)
+                })  Items["BottomTabs"]:AddToTheme({BackgroundColor3 = "Background"})
+
                 Library:MakeBlurred(Items["LeftTabs"], Window)
 
                 local Gui = Items["MainFrame"].Instance
@@ -2801,6 +2844,57 @@ local Library do
                     PaddingLeft = UDimNew(0, 12)
                 })
 
+                -- Add UIListLayout and UIPadding for other tab containers
+                Instances:Create("UIListLayout", {
+                    Parent = Items["RightTabs"].Instance,
+                    Name = "\0",
+                    Padding = UDimNew(0, 12),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+                
+                Instances:Create("UIPadding", {
+                    Parent = Items["RightTabs"].Instance,
+                    Name = "\0",
+                    PaddingTop = UDimNew(0, 15),
+                    PaddingBottom = UDimNew(0, 15),
+                    PaddingRight = UDimNew(0, 12),
+                    PaddingLeft = UDimNew(0, 12)
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Items["TopTabs"].Instance,
+                    Name = "\0",
+                    Padding = UDimNew(0, 12),
+                    SortOrder = Enum.SortOrder.LayoutOrder,
+                    FillDirection = Enum.FillDirection.Horizontal
+                })
+                
+                Instances:Create("UIPadding", {
+                    Parent = Items["TopTabs"].Instance,
+                    Name = "\0",
+                    PaddingTop = UDimNew(0, 15),
+                    PaddingBottom = UDimNew(0, 15),
+                    PaddingRight = UDimNew(0, 12),
+                    PaddingLeft = UDimNew(0, 12)
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Items["BottomTabs"].Instance,
+                    Name = "\0",
+                    Padding = UDimNew(0, 12),
+                    SortOrder = Enum.SortOrder.LayoutOrder,
+                    FillDirection = Enum.FillDirection.Horizontal
+                })
+                
+                Instances:Create("UIPadding", {
+                    Parent = Items["BottomTabs"].Instance,
+                    Name = "\0",
+                    PaddingTop = UDimNew(0, 15),
+                    PaddingBottom = UDimNew(0, 15),
+                    PaddingRight = UDimNew(0, 12),
+                    PaddingLeft = UDimNew(0, 12)
+                })
+
                 Items["Logo"] = Instances:Create("ImageLabel", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
@@ -2944,6 +3038,25 @@ local Library do
 
                 Instances:Create("UICorner", {
                     Parent = Items["LeftTabs"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 4)
+                })      
+
+                -- Add UICorner for other tab containers
+                Instances:Create("UICorner", {
+                    Parent = Items["RightTabs"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 4)
+                })      
+
+                Instances:Create("UICorner", {
+                    Parent = Items["TopTabs"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 4)
+                })      
+
+                Instances:Create("UICorner", {
+                    Parent = Items["BottomTabs"].Instance,
                     Name = "\0",
                     CornerRadius = UDimNew(0, 4)
                 })      
@@ -3742,7 +3855,7 @@ local Library do
                 })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
 
                 Items["Page"] = Instances:Create("ScrollingFrame", {
-                    Parent = Page.Window.Items["RightTabs"].Instance,
+                    Parent = Page.Window.Items["Content"].Instance,
                     Name = "\0",
                     Active = true,
                     BackgroundColor3 = FromRGB(255, 255, 255),
