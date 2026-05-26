@@ -1948,7 +1948,7 @@ local Library do
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(0, 0.5),
-                    BackgroundTransparency = 0,
+                    BackgroundTransparency = 1, -- Make main frame transparent so backdrop shows through
                     Position = UDim2New(0, 20, 0.5, -50),
                     Size = UDim2New(0, 200, 0, 56),
                     BorderSizePixel = 0,
@@ -1964,14 +1964,34 @@ local Library do
                     CornerRadius = UDimNew(0, 8)
                 })
 
-                -- Header area (transparent, just for positioning)
+                -- Header area (solid background for header)
                 Items["Top"] = Instances:Create("Frame", {
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
-                    BackgroundTransparency = 1,
+                    BackgroundTransparency = 0, -- Solid header
                     Size = UDim2New(1, 0, 0, 40),
                     Position = UDim2New(0, 0, 0, 0),
+                    BackgroundColor3 = FromRGB(20, 20, 24), -- Dark header color
+                    BorderSizePixel = 0,
                     ZIndex = 2
+                })
+                
+                -- Round top corners only for header
+                Instances:Create("UICorner", {
+                    Parent = Items["Top"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 8)
+                })
+                
+                -- Hide bottom corners of header
+                Instances:Create("Frame", {
+                    Parent = Items["Top"].Instance,
+                    Name = "\0",
+                    Position = UDim2New(0, 0, 1, -8),
+                    Size = UDim2New(1, 0, 0, 8),
+                    BackgroundColor3 = FromRGB(20, 20, 24),
+                    BorderSizePixel = 0,
+                    ZIndex = 3
                 })
 
                 Items["Icon"] = Instances:Create("ImageLabel", {
@@ -1984,7 +2004,7 @@ local Library do
                     Image = "rbxassetid://81598136527047",
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 15, 0.5, 0),
-                    ZIndex = 3,
+                    ZIndex = 4,
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -2010,7 +2030,7 @@ local Library do
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 45, 0.5, -1),
                     BorderSizePixel = 0,
-                    ZIndex = 3,
+                    ZIndex = 4,
                     TextSize = 15,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  Items["Title"]:AddToTheme({TextColor3 = "Text"})
