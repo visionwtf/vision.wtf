@@ -2015,14 +2015,14 @@ local Library do
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  Items["Title"]:AddToTheme({TextColor3 = "Text"})
 
-                -- Content backdrop (lighter area like in-game mods)
+                -- Content backdrop (same color as header with opacity like in-game mods)
                 Items["ContentBackdrop"] = Instances:Create("Frame", {
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
-                    BackgroundTransparency = 0,
+                    BackgroundTransparency = 0.3, -- Add opacity like in-game
                     Position = UDim2New(0, 0, 0, 40),
                     Size = UDim2New(1, 0, 0, 16),
-                    BackgroundColor3 = FromRGB(55, 55, 60), -- Lighter grey like in-game
+                    BackgroundColor3 = FromRGB(20, 20, 24), -- Same color as header
                     BorderSizePixel = 0,
                     ZIndex = 1
                 })
@@ -2040,7 +2040,7 @@ local Library do
                     Name = "\0",
                     Position = UDim2New(0, 0, 0, 0),
                     Size = UDim2New(1, 0, 0, 8),
-                    BackgroundColor3 = FromRGB(55, 55, 60),
+                    BackgroundColor3 = FromRGB(20, 20, 24), -- Same color as header
                     BorderSizePixel = 0,
                     ZIndex = 2
                 })
@@ -3975,7 +3975,7 @@ local Library do
                     Instances:Create("UIListLayout", {
                         Parent = Page.ColumnsData[Index].Instance,
                         Name = "\0",
-                        Padding = UDimNew(0, 20), -- Increased from 15 to 20 for better spacing
+                        Padding = UDimNew(0, 25), -- Increased from 20 to 25 for better spacing between section elements
                         SortOrder = Enum.SortOrder.LayoutOrder
                     })
                 end
