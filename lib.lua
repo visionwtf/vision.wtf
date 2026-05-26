@@ -1952,7 +1952,7 @@ local Library do
                     Size = UDim2New(0, 200, 0, 40), -- Fixed width to prevent stretching
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.None, -- No automatic sizing initially
-                    BackgroundColor3 = FromRGB(12, 12, 14), -- Dark solid background like in-game mods
+                    BackgroundColor3 = FromRGB(8, 8, 10), -- Darker background to match in-game mods
                     Active = true
                 })  Items["KeybindsList"]:AddToTheme({BackgroundColor3 = "Background"})
 
@@ -1967,9 +1967,9 @@ local Library do
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 12, 0, 40),
+                    Size = UDim2New(1, 0, 0, 40),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(16, 16, 18) -- Slightly lighter than main background
+                    BackgroundColor3 = FromRGB(12, 12, 15) -- Slightly lighter than main background
                 })  Items["Top"]:AddToTheme({BackgroundColor3 = "Element"})
                 
                 Items["Icon"] = Instances:Create("ImageLabel", {
@@ -2095,10 +2095,10 @@ local Library do
                     Text = "",
                     AutoButtonColor = false,
                     BackgroundTransparency = 0, -- Solid background like in-game mods
-                    Size = UDim2New(1, 0, 0, 20),
+                    Size = UDim2New(1, 0, 0, 24), -- Slightly taller for better match
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = FromRGB(16, 16, 18), -- Dark solid background
+                    BackgroundColor3 = FromRGB(10, 10, 12), -- Dark solid background matching in-game
                     Visible = (Key and Key ~= "" and Key ~= "None")
                 })  NewKey:AddToTheme({BackgroundColor3 = "Element"})
                 
@@ -2106,7 +2106,7 @@ local Library do
                 Instances:Create("UICorner", {
                     Parent = NewKey.Instance,
                     Name = "\0",
-                    CornerRadius = UDimNew(0, 4)
+                    CornerRadius = UDimNew(0, 6) -- Slightly more rounded like in-game
                 })
                 
                 -- Blue dot indicator for active keybinds
@@ -2115,11 +2115,11 @@ local Library do
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(0, 0.5),
-                    BackgroundTransparency = 0, -- Make visible for active keybinds
-                    Position = UDim2New(0, 8, 0.5, 0),
+                    BackgroundTransparency = 1, -- Start hidden
+                    Position = UDim2New(0, 10, 0.5, 0), -- Positioned like in-game
                     Size = UDim2New(0, 6, 0, 6),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(0, 116, 224) -- Blue accent color
+                    BackgroundColor3 = FromRGB(0, 162, 255) -- Brighter blue like in-game
                 })  NewKeyAccent:AddToTheme({BackgroundColor3 = "Accent"})
 
                 Instances:Create("UICorner", {
@@ -2131,17 +2131,17 @@ local Library do
                     Parent = NewKey.Instance,
                     Name = "\0",
                     FontFace = Library.Font,
-                    TextColor3 = FromRGB(255, 255, 255),
-                    TextTransparency = 0.30000001192092896,
-                    Text = (Key and Key ~= "" and Key ~= "None") and (Name .. " ["..Key.."]") or "",
-                    Size = UDim2New(1, -20, 0, 15), -- Leave space for blue dot
+                    TextColor3 = FromRGB(200, 200, 200), -- Slightly dimmed text like in-game
+                    TextTransparency = 0.1, -- Less transparent for better readability
+                    Text = (Key and Key ~= "" and Key ~= "None") and (Name .. " [" .. Key .. "]") or "",
+                    Size = UDim2New(1, -24, 1, 0), -- Leave space for blue dot
                     AnchorPoint = Vector2New(0, 0.5),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 18, 0.5, 0), -- Offset for blue dot
+                    Position = UDim2New(0, 22, 0.5, 0), -- Offset for blue dot
                     BorderColor3 = FromRGB(0, 0, 0),
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    TextSize = 14,
+                    TextSize = 13, -- Slightly smaller text like in-game
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  NewKeyText:AddToTheme({TextColor3 = "Text"})
 
@@ -2151,7 +2151,7 @@ local Library do
                     if not NewKey or not NewKey.Instance then return end
                     
                     -- Only show keybind if it has a valid key
-                    if Key and Key ~= "" and Key ~= "None" then
+                    if Key and Key ~= "" and Key ~= "None" and not Key:find("table:") then
                         NewKeyText.Instance.Text = Name .. " [" .. Key .. "]"
                         NewKey.Instance.Visible = true
                     else
@@ -2169,7 +2169,7 @@ local Library do
                     else
                         -- Hide blue dot and dim text when keybind is inactive
                         NewKeyAccent:Tween(nil, {BackgroundTransparency = 1})
-                        NewKeyText:Tween(nil, {TextTransparency = 0.3})
+                        NewKeyText:Tween(nil, {TextTransparency = 0.4})
                     end
                 end
 
@@ -5672,7 +5672,18 @@ local Library do
                 local function UpdateKeybind()
                     local keyText = "None"
                     if Keybind.Key and Keybind.Key ~= Enum.KeyCode.Unknown then
-                        keyText = Keys[tostring(Keybind.Key)] or tostring(Keybind.Key):gsub("Enum.KeyCode.", "")
+                        -- Handle both string and enum key values
+                        local keyString = tostring(Keybind.Key)
+                        if keyString:find("Enum.KeyCode.") then
+                            keyText = Keys[keyString] or keyString:gsub("Enum.KeyCode.", "")
+                        else
+                            keyText = Keys[keyString] or keyString
+                        end
+                        
+                        -- Fallback if we still have a table reference
+                        if keyText:find("table:") then
+                            keyText = "None"
+                        end
                     end
                     
                     KeybindButton.Instance.Text = keyText
@@ -5789,7 +5800,18 @@ local Library do
                         pcall(function()
                             local keyText = "None"
                             if Keybind.Key and Keybind.Key ~= Enum.KeyCode.Unknown then
-                                keyText = Keys[tostring(Keybind.Key)] or tostring(Keybind.Key):gsub("Enum.KeyCode.", "")
+                                -- Handle both string and enum key values
+                                local keyString = tostring(Keybind.Key)
+                                if keyString:find("Enum.KeyCode.") then
+                                    keyText = Keys[keyString] or keyString:gsub("Enum.KeyCode.", "")
+                                else
+                                    keyText = Keys[keyString] or keyString
+                                end
+                                
+                                -- Fallback if we still have a table reference
+                                if keyText:find("table:") then
+                                    keyText = "None"
+                                end
                             end
                             Keybind.KeyListItem:Set(Keybind.Name, keyText)
                             Keybind.KeyListItem:SetStatus(Keybind.Toggled)
