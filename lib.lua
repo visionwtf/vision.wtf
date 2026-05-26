@@ -3944,38 +3944,6 @@ local Library do
             return setmetatable(Section, {__index = Library.Sections})
         end
 
-        end
-
-        end
-
-        end
-
-        end
-
-        end
-
-        end
-
-        end
-
-        end
-
-        end
-
-        end
-
-        end
-
-        end
-
-        end
-
-        end
-
-        end
-
-        end
-
         Library.Pages.GlobalChat = function(self, Side)
             local GlobalChat = { }
             Library.GlobalChatt = GlobalChat
