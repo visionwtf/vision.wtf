@@ -3856,10 +3856,6 @@ local Library do
             return GlobalChat
         end
 
-        end
-
-        end
-
         Library.Pages.Section = function(self, Data)
             Data = Data or { }
 
@@ -8055,7 +8051,6 @@ end
                 Window.Instance.Visible = false
             end)
         end
-    end
 
 end -- Close the 'do' block from line 6
 
