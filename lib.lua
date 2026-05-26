@@ -5589,6 +5589,7 @@ local Library do
                     Default = Data.Default or Data.default or nil, -- Changed to nil instead of E
                     Callback = Data.Callback or Data.callback or function() end,
                     Mode = Data.Mode or Data.mode or "Toggle",
+                    Name = Data.Name or Data.name or Toggle.Name, -- Add name for keybind list
                     
                     Key = nil,
                     Toggled = false,
@@ -5626,18 +5627,35 @@ local Library do
                 -- Initialize keybind
                 Keybind.Key = Keybind.Default
                 
+                -- Register with KeybindList
+                local KeyListItem 
+                if Library.KeyList and Library.KeyList.Add then 
+                    pcall(function()
+                        KeyListItem = Library.KeyList:Add("", "")
+                    end)
+                end
+                
                 local function UpdateKeybind()
+                    local keyText = "None"
                     if Keybind.Key and Keybind.Key ~= Enum.KeyCode.Unknown then
-                        KeybindButton.Instance.Text = Keys[tostring(Keybind.Key)] or tostring(Keybind.Key):gsub("Enum.KeyCode.", "")
-                    else
-                        KeybindButton.Instance.Text = "None"
+                        keyText = Keys[tostring(Keybind.Key)] or tostring(Keybind.Key):gsub("Enum.KeyCode.", "")
                     end
+                    
+                    KeybindButton.Instance.Text = keyText
                     
                     Library.Flags[Keybind.Flag] = {
                         Mode = Keybind.Mode,
                         Key = Keybind.Key,
                         Toggled = Keybind.Toggled
                     }
+                    
+                    -- Update KeybindList
+                    if KeyListItem and KeyListItem.Set then 
+                        pcall(function()
+                            KeyListItem:Set(Keybind.Name, keyText)
+                            KeyListItem:SetStatus(Keybind.Toggled)
+                        end)
+                    end
                 end
                 
                 -- Keybind input handling
@@ -5673,6 +5691,13 @@ local Library do
                             Toggled = Keybind.Toggled
                         }
                         
+                        -- Update KeybindList status
+                        if KeyListItem and KeyListItem.SetStatus then 
+                            pcall(function()
+                                KeyListItem:SetStatus(Keybind.Toggled)
+                            end)
+                        end
+                        
                         if Keybind.Callback then
                             Library:SafeCall(Keybind.Callback, Keybind.Toggled)
                         end
@@ -5690,6 +5715,13 @@ local Library do
                                 Key = Keybind.Key,
                                 Toggled = Keybind.Toggled
                             }
+                            
+                            -- Update KeybindList status
+                            if KeyListItem and KeyListItem.SetStatus then 
+                                pcall(function()
+                                    KeyListItem:SetStatus(Keybind.Toggled)
+                                end)
+                            end
                             
                             if Keybind.Callback then
                                 Library:SafeCall(Keybind.Callback, Keybind.Toggled)
