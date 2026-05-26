@@ -3722,6 +3722,20 @@ local Library do
             --]]
 
             function Window:Init()
+                -- Ensure only the first page is active by default
+                local firstPageActivated = false
+                for __, Value in Window.Pages do 
+                    if not firstPageActivated then
+                        -- Activate the first page (Combat)
+                        Value:SetActive(true)
+                        firstPageActivated = true
+                    else
+                        -- Ensure all other pages are inactive
+                        Value:SetActive(false)
+                    end
+                end
+                
+                -- Animate elements for the active page
                 for __, Value in Window.Pages do 
                     if Value.Active then 
                         for _, Value2 in Value.Sections do 
@@ -3907,10 +3921,12 @@ local Library do
                 Page.Active = Bool
 
                 if Page.Active then 
-                    -- Ensure all other pages are deactivated first
+                    -- Ensure all other pages are deactivated first (direct assignment to avoid recursion)
                     for Index, Value in Page.Window.Pages do 
                         if Value ~= Page and Value.Active then 
-                            Value:SetActive(false)
+                            Value.Active = false
+                            Value.Items["Inactive"].Instance.BackgroundTransparency = 1
+                            Value.Items["Page"].Instance.Visible = false
                         end
                     end
                     
@@ -3922,9 +3938,11 @@ local Library do
                     Items["Page"]:Tween(TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0)})
 
                     -- Animate elements in with stagger
+                    local elementIndex = 0
                     for Index, Value in Page.Sections do 
+                        elementIndex = elementIndex + 1
                         task.spawn(function()
-                            task.wait(Index * 0.02) -- Small stagger delay
+                            task.wait(elementIndex * 0.02) -- Small stagger delay using numeric index
                             Value:TweenElements(true)
                         end)
                     end
@@ -3971,6 +3989,7 @@ local Library do
             end)
 
             TableInsert(Page.Window.Pages, Page)
+            
             return setmetatable(Page, {__index = Library.Pages})
         end
 
