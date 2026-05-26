@@ -4011,12 +4011,6 @@ local Library do
                                 task.spawn(function()
                                     pcall(function()
                                         Value:TweenElements(false, true) -- Immediate hide
-                                        end)
-                                    end)
-                                end
-                            end
-                        end
-
                                     end)
                                 end)
                             end
