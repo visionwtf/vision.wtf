@@ -2035,7 +2035,7 @@ local Library do
                 Items["ContentBackdrop"] = Instances:Create("Frame", {
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
-                    BackgroundTransparency = 0.7, -- Increased transparency to make opacity more visible
+                    BackgroundTransparency = 0.3, -- Reduced to 30% transparency
                     Position = UDim2New(0, 0, 0, 40),
                     Size = UDim2New(1, 0, 0, 16),
                     BackgroundColor3 = FromRGB(20, 20, 24), -- Same color as header
@@ -2050,14 +2050,14 @@ local Library do
                     CornerRadius = UDimNew(0, 8)
                 })
                 
-                -- Hide top corners (with transparency to match backdrop)
+                -- Hide top corners to make them square
                 Instances:Create("Frame", {
                     Parent = Items["ContentBackdrop"].Instance,
                     Name = "\0",
                     Position = UDim2New(0, 0, 0, 0),
                     Size = UDim2New(1, 0, 0, 8),
-                    BackgroundColor3 = FromRGB(20, 20, 24), -- Same color as header
-                    BackgroundTransparency = 0.7, -- Match backdrop transparency
+                    BackgroundColor3 = FromRGB(20, 20, 24), -- Same color as backdrop
+                    BackgroundTransparency = 0.3, -- Match backdrop transparency
                     BorderSizePixel = 0,
                     ZIndex = 2
                 })
