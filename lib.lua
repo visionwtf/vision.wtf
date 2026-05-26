@@ -3727,21 +3727,33 @@ local Library do
                 for __, Value in Window.Pages do 
                     if not firstPageActivated then
                         -- Activate the first page (Combat)
-                        Value:SetActive(true)
+                        if Value and Value.SetActive then
+                            pcall(function()
+                                Value:SetActive(true)
+                            end)
+                        end
                         firstPageActivated = true
                     else
                         -- Ensure all other pages are inactive
-                        Value:SetActive(false)
+                        if Value and Value.SetActive then
+                            pcall(function()
+                                Value:SetActive(false)
+                            end)
+                        end
                     end
                 end
                 
                 -- Animate elements for the active page
                 for __, Value in Window.Pages do 
-                    if Value.Active then 
+                    if Value and Value.Active and Value.Sections then 
                         for _, Value2 in Value.Sections do 
-                            task.spawn(function()
-                                Value2:TweenElements(true)
-                            end)
+                            if Value2 and Value2.TweenElements then
+                                task.spawn(function()
+                                    pcall(function()
+                                        Value2:TweenElements(true)
+                                    end)
+                                end)
+                            end
                         end
                     end
                 end
@@ -3923,57 +3935,81 @@ local Library do
                 if Page.Active then 
                     -- Ensure all other pages are deactivated first (direct assignment to avoid recursion)
                     for Index, Value in Page.Window.Pages do 
-                        if Value ~= Page and Value.Active then 
+                        if Value ~= Page and Value.Active and Value.Items then 
                             Value.Active = false
-                            Value.Items["Inactive"].Instance.BackgroundTransparency = 1
-                            Value.Items["Page"].Instance.Visible = false
+                            if Value.Items["Inactive"] and Value.Items["Inactive"].Instance then
+                                Value.Items["Inactive"].Instance.BackgroundTransparency = 1
+                            end
+                            if Value.Items["Page"] and Value.Items["Page"].Instance then
+                                Value.Items["Page"].Instance.Visible = false
+                            end
                         end
                     end
                     
-                    Items["Inactive"].Instance.BackgroundTransparency = 0
-                    Items["Page"].Instance.Visible = true
-                    
-                    -- Smooth slide-in animation from right
-                    Items["Page"].Instance.Position = UDim2New(1, 0, 0, 0)
-                    Items["Page"]:Tween(TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0)})
+                    if Items["Inactive"] and Items["Inactive"].Instance then
+                        Items["Inactive"].Instance.BackgroundTransparency = 0
+                    end
+                    if Items["Page"] and Items["Page"].Instance then
+                        Items["Page"].Instance.Visible = true
+                        
+                        -- Smooth slide-in animation from right
+                        Items["Page"].Instance.Position = UDim2New(1, 0, 0, 0)
+                        Items["Page"]:Tween(TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 0)})
+                    end
 
                     -- Animate elements in with stagger
-                    local elementIndex = 0
-                    for Index, Value in Page.Sections do 
-                        elementIndex = elementIndex + 1
-                        task.spawn(function()
-                            task.wait(elementIndex * 0.02) -- Small stagger delay using numeric index
-                            Value:TweenElements(true)
-                        end)
+                    if Page.Sections then
+                        local elementIndex = 0
+                        for Index, Value in Page.Sections do 
+                            elementIndex = elementIndex + 1
+                            if Value and Value.TweenElements then
+                                task.spawn(function()
+                                    task.wait(elementIndex * 0.02) -- Small stagger delay using numeric index
+                                    pcall(function()
+                                        Value:TweenElements(true)
+                                    end)
+                                end)
+                            end
+                        end
                     end
                 else
-                    Items["Inactive"].Instance.BackgroundTransparency = 1
+                    if Items["Inactive"] and Items["Inactive"].Instance then
+                        Items["Inactive"].Instance.BackgroundTransparency = 1
+                    end
                     
                     -- Smooth slide-out animation to left (not outside the menu)
-                    local slideTween = Items["Page"]:Tween(TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(-1, 0, 0, 0)})
+                    if Items["Page"] then
+                        local slideTween = Items["Page"]:Tween(TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(-1, 0, 0, 0)})
 
-                    -- Hide elements immediately to prevent flying outside
-                    for Index, Value in Page.Sections do 
-                        task.spawn(function()
-                            Value:TweenElements(false, true)
-                        end)
-                    end
+                        -- Hide elements immediately to prevent flying outside
+                        if Page.Sections then
+                            for Index, Value in Page.Sections do 
+                                if Value and Value.TweenElements then
+                                    task.spawn(function()
+                                        pcall(function()
+                                            Value:TweenElements(false, true)
+                                        end)
+                                    end)
+                                end
+                            end
+                        end
 
-                    -- Hide page after animation completes
-                    if slideTween and slideTween.Tween then
-                        slideTween.Tween.Completed:Connect(function()
-                            if not Page.Active then
-                                Items["Page"].Instance.Visible = false
-                            end
-                        end)
-                    else
-                        -- Fallback
-                        task.spawn(function()
-                            task.wait(0.25)
-                            if not Page.Active then
-                                Items["Page"].Instance.Visible = false
-                            end
-                        end)
+                        -- Hide page after animation completes
+                        if slideTween and slideTween.Tween then
+                            slideTween.Tween.Completed:Connect(function()
+                                if not Page.Active and Items["Page"] and Items["Page"].Instance then
+                                    Items["Page"].Instance.Visible = false
+                                end
+                            end)
+                        else
+                            -- Fallback
+                            task.spawn(function()
+                                task.wait(0.25)
+                                if not Page.Active and Items["Page"] and Items["Page"].Instance then
+                                    Items["Page"].Instance.Visible = false
+                                end
+                            end)
+                        end
                     end
                 end
             end
@@ -5059,7 +5095,11 @@ local Library do
 
             function Section:TweenElements(Bool, Debounce)
                 for Index, Value in Section.Elements do
-                    Value:RefreshPosition(Bool)
+                    if Value and Value.RefreshPosition then
+                        pcall(function()
+                            Value:RefreshPosition(Bool)
+                        end)
+                    end
                     if not Debounce then 
                         task.wait(0.03)
                     end
@@ -6908,58 +6948,6 @@ local Library do
                         KeyListItem:SetStatus(Keybind.Toggled)
                     end)
                 end
-            end
-
-            function Keybind:RefreshPosition(Bool)
-                if Bool then 
-                    Items["Text"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 5)})
-                    Items["SubElements"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 30)})
-                    Items["Modes"]:Tween(TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(1, 0, 0, 0)})
-                else
-                    Items["Text"].Instance.Position = UDim2New(0, 30, 0, 5)
-                    Items["SubElements"].Instance.Position = UDim2New(0, 30, 0, 30)
-                    Items["Modes"].Instance.Position = UDim2New(1, 30, 0, 0)
-                end
-            end
-
-            function Keybind:SetMode(Mode) -- support both Toggle and Hold modes
-                Keybind.ModeSelected = Mode or "Toggle"
-                
-                Library.Flags[Keybind.Flag] = {
-                    Mode = Keybind.ModeSelected,
-                    Key = Keybind.Key,
-                    Toggled = Keybind.Toggled
-                }
-
-                if Data.Callback then 
-                    Library:SafeCall(Data.Callback, Keybind.Toggled)
-                end
-            end
-
-            function Keybind:Press(Bool)
-                -- Support both Toggle and Hold modes based on ModeSelected
-                if Keybind.ModeSelected == "Hold" then
-                    Keybind.Toggled = Bool
-                else
-                    -- Default to Toggle mode behavior
-                    Keybind.Toggled = not Keybind.Toggled
-                end
-
-                Library.Flags[Keybind.Flag] = {
-                    Mode = Keybind.ModeSelected or "Toggle",
-                    Key = Keybind.Key,
-                    Toggled = Keybind.Toggled
-                }
-
-                if Data.Callback then 
-                    Library:SafeCall(Data.Callback, Keybind.Toggled)
-                end
-
-                pcall(Update)
-            end
-
-            function Keybind:Get()
-                return Keybind.Key, Keybind.ModeSelected or "Toggle", Keybind.Toggled
             end
 
             function Keybind:Set(Key)
