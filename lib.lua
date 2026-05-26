@@ -1,7 +1,6 @@
 -- Made by samet
--- Join for high quality UI Commissions
--- https://discord.gg/VhvTd5HV8d
--- @joestar._3
+-- leaked
+-- being used by vision.wtf
 
 local Library do 
     local Workspace = game:GetService("Workspace")
