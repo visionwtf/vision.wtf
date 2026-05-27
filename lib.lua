@@ -2031,11 +2031,11 @@ local Library do
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  Items["Title"]:AddToTheme({TextColor3 = "Text"})
 
-                -- Content backdrop (same color as header with opacity)
+                -- Content backdrop (same color as header with less opacity)
                 Items["ContentBackdrop"] = Instances:Create("Frame", {
                     Parent = Items["KeybindsList"].Instance,
                     Name = "\0",
-                    BackgroundTransparency = 0.3, -- Reduced to 30% transparency
+                    BackgroundTransparency = 0.15, -- 15% transparency (85% opaque)
                     Position = UDim2New(0, 0, 0, 40),
                     Size = UDim2New(1, 0, 0, 16),
                     BackgroundColor3 = FromRGB(20, 20, 24), -- Same color as header
@@ -2050,14 +2050,14 @@ local Library do
                     CornerRadius = UDimNew(0, 8)
                 })
                 
-                -- Hide top corners to make them square
+                -- Create a square mask to hide top corners (same transparency as backdrop)
                 Instances:Create("Frame", {
                     Parent = Items["ContentBackdrop"].Instance,
                     Name = "\0",
                     Position = UDim2New(0, 0, 0, 0),
                     Size = UDim2New(1, 0, 0, 8),
                     BackgroundColor3 = FromRGB(20, 20, 24), -- Same color as backdrop
-                    BackgroundTransparency = 0.3, -- Match backdrop transparency
+                    BackgroundTransparency = 0.15, -- Same transparency as backdrop
                     BorderSizePixel = 0,
                     ZIndex = 2
                 })
