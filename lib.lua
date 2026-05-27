@@ -469,12 +469,14 @@ local Library do
         
                 -- Safety check to prevent clamp error
                 if GuiSize.X > 0 and GuiSize.Y > 0 and ScreenSize.X > GuiSize.X and ScreenSize.Y > GuiSize.Y then
-                    NewX = MathClamp(NewX, 0, ScreenSize.X - GuiSize.X)
-                    NewY = MathClamp(NewY, 0, ScreenSize.Y - GuiSize.Y)
+                    -- Allow dragging partially off-screen but keep at least 50 pixels visible
+                    local MinVisiblePixels = 50
+                    NewX = MathClamp(NewX, -GuiSize.X + MinVisiblePixels, ScreenSize.X - MinVisiblePixels)
+                    NewY = MathClamp(NewY, -GuiSize.Y + MinVisiblePixels, ScreenSize.Y - MinVisiblePixels)
                 else
-                    -- Fallback positioning if sizes are invalid
-                    NewX = MathMax(0, NewX)
-                    NewY = MathMax(0, NewY)
+                    -- Fallback positioning - allow negative values for partial off-screen positioning
+                    NewX = MathMax(-GuiSize.X * 0.8, NewX)
+                    NewY = MathMax(-GuiSize.Y * 0.8, NewY)
                 end
         
                 self:Tween(TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(StartPosition.X.Scale, NewX, StartPosition.Y.Scale, NewY)})
