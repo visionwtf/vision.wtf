@@ -1918,7 +1918,14 @@ local Library do
                         return
                     end
 
-                    if Library:IsMouseOverFrame(Items["ColorpickerWindow"]) or Library:IsMouseOverFrame(Items["PaletteIcon"]) and not Data.Section.IsSettings then
+                    -- Check if clicking on colorpicker elements
+                    if Library:IsMouseOverFrame(Items["ColorpickerWindow"]) or 
+                       Library:IsMouseOverFrame(Items["ColorpickerButton"]) or
+                       Library:IsMouseOverFrame(Items["Color"]) or
+                       Library:IsMouseOverFrame(Items["Palette"]) or
+                       Library:IsMouseOverFrame(Items["HueInline"]) or
+                       Library:IsMouseOverFrame(Items["Alpha"]) or
+                       Library:IsMouseOverFrame(Items["SavedColors"]) then
                         return
                     end
 
@@ -6955,7 +6962,10 @@ local Library do
             Library:Connect(UserInputService.InputBegan, function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     if Dropdown.IsOpen then
-                        if Library:IsMouseOverFrame(Items["OptionHolder"]) then
+                        -- Check if clicking on dropdown elements
+                        if Library:IsMouseOverFrame(Items["OptionHolder"]) or 
+                           Library:IsMouseOverFrame(Items["RealDropdown"]) or
+                           Library:IsMouseOverFrame(Items["Dropdown"]) then
                             return
                         end
 
