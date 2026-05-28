@@ -467,16 +467,12 @@ local Library do
                 local ScreenSize = Gui.Parent.AbsoluteSize
                 local GuiSize = Gui.AbsoluteSize
         
-                -- Safety check to prevent clamp error
-                if GuiSize.X > 0 and GuiSize.Y > 0 and ScreenSize.X > GuiSize.X and ScreenSize.Y > GuiSize.Y then
-                    -- Allow dragging partially off-screen but keep at least 50 pixels visible
-                    local MinVisiblePixels = 50
-                    NewX = MathClamp(NewX, -GuiSize.X + MinVisiblePixels, ScreenSize.X - MinVisiblePixels)
-                    NewY = MathClamp(NewY, -GuiSize.Y + MinVisiblePixels, ScreenSize.Y - MinVisiblePixels)
-                else
-                    -- Fallback positioning - allow negative values for partial off-screen positioning
-                    NewX = MathMax(-GuiSize.X * 0.8, NewX)
-                    NewY = MathMax(-GuiSize.Y * 0.8, NewY)
+                -- FIXED: Allow full dragging in all directions including upward
+                if GuiSize.X > 0 and GuiSize.Y > 0 and ScreenSize.X > 0 and ScreenSize.Y > 0 then
+                    -- Allow dragging 90% off-screen in any direction, including upward
+                    local MinVisiblePixels = 30
+                    NewX = MathClamp(NewX, -GuiSize.X * 0.9, ScreenSize.X - MinVisiblePixels)
+                    NewY = MathClamp(NewY, -GuiSize.Y * 0.9, ScreenSize.Y - MinVisiblePixels)
                 end
         
                 self:Tween(TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(StartPosition.X.Scale, NewX, StartPosition.Y.Scale, NewY)})
